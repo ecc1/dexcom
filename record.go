@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// A SensorRecord contains a reading received from a Dexcom CGM sensor.
 type SensorRecord struct {
 	Timestamp  Timestamp
 	Unfiltered uint32
@@ -12,6 +13,7 @@ type SensorRecord struct {
 	RSSI       uint16
 }
 
+// UnmarshalSensorRecord unmarshals a byte array into a SensorRecord.
 func UnmarshalSensorRecord(v []byte) SensorRecord {
 	if len(v) != 18 {
 		panic(fmt.Sprintf("SensorRecord: wrong length (%d)", len(v)))
@@ -85,6 +87,7 @@ func (t Trend) Symbol() string {
 	return trendSymbol[t]
 }
 
+// An EGVRecord contains a glucose reading calculated by the Dexcom CGM receiver.
 type EGVRecord struct {
 	Timestamp   Timestamp
 	Glucose     uint16
@@ -98,6 +101,7 @@ const (
 	EGV_TREND_ARROW_MASK = (1 << 4) - 1
 )
 
+// UnmarshalEGVRecord unmarshals a byte array into an EGVRecord.
 func UnmarshalEGVRecord(v []byte) EGVRecord {
 	if len(v) != 11 {
 		panic(fmt.Sprintf("EGVRecord: wrong length (%d)", len(v)))
@@ -111,12 +115,14 @@ func UnmarshalEGVRecord(v []byte) EGVRecord {
 	}
 }
 
+// A MeterRecord contains a glucometer reading.
 type MeterRecord struct {
 	Timestamp Timestamp
 	Glucose   uint16
 	MeterTime time.Time
 }
 
+// UnmarshalMeterRecord unmarshals a byte array into a MeterRecord.
 func UnmarshalMeterRecord(v []byte) MeterRecord {
 	if len(v) != 14 {
 		panic(fmt.Sprintf("MeterRecord: wrong length (%d)", len(v)))

@@ -12,15 +12,18 @@ func toTime(t uint32) time.Time {
 	return baseTime.Add(time.Duration(int64(t)) * time.Second)
 }
 
+// UnmarshalTime unmarshals a 4-byte array into a Time value.
 func UnmarshalTime(v []byte) time.Time {
 	return toTime(UnmarshalUint32(v))
 }
 
+// A Timestamp contains system and display Time values.
 type Timestamp struct {
 	SystemTime  time.Time
 	DisplayTime time.Time
 }
 
+// UnmarshalTimestamp unmarshals a byte array into a Timestamp.
 func UnmarshalTimestamp(v []byte) Timestamp {
 	return Timestamp{
 		SystemTime:  UnmarshalTime(v[0:4]),
@@ -36,6 +39,7 @@ func displayTime(sys uint32, offset int32) time.Time {
 // SYSTEM_TIME = RTC + SYSTEM_TIME_OFFSET
 // DISPLAY_TIME = SYSTEM_TIME + DISPLAY_TIME_OFFSET
 
+// ReadDisplayTime gets the current display Time value from the Dexcom CGM receiver.
 func (dev Device) ReadDisplayTime() (time.Time, error) {
 	v, err := dev.Cmd(READ_DISPLAY_TIME_OFFSET)
 	if err != nil {

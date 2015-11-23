@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// A RecordType specifies a type of record stored by the Dexcom CGM receiver.
 type RecordType byte
 
 //go:generate stringer -type=RecordType
@@ -27,6 +28,8 @@ const (
 	LastRecordType  = USER_SETTING_DATA
 )
 
+// A RecordContext holds information about a range of pages of
+// a given record type during iteration over those records.
 type RecordContext struct {
 	RecordType RecordType
 	StartPage  uint32
@@ -35,6 +38,8 @@ type RecordContext struct {
 	Index      uint32
 }
 
+// ReadPageRange requests the StartPage and EndPage for a given RecordType
+// and returns a RecordContext with those values.
 func (dev Device) ReadPageRange(recordType RecordType) (*RecordContext, error) {
 	v, err := dev.Cmd(READ_DATABASE_PAGE_RANGE, []byte{byte(recordType)})
 	if err != nil {
@@ -60,6 +65,8 @@ func (dev Device) ReadRecords(recordType RecordType, recordFn RecordFunc) error 
 	return dev.IterRecords(context, recordFn)
 }
 
+// IterRecords reads the pages of the type and range specified by the
+// given RecordContext and applies recordFn to each record in each page.
 func (dev Device) IterRecords(context *RecordContext, recordFn RecordFunc) error {
 	for n := context.StartPage; n <= context.EndPage; n++ {
 		context.PageNumber = n
@@ -71,6 +78,8 @@ func (dev Device) IterRecords(context *RecordContext, recordFn RecordFunc) error
 	return nil
 }
 
+// ReadPage reads a single page specified by the PageNumber field of the
+// given RecordContext and applies recordFn to each record in the page.
 func (dev Device) ReadPage(context *RecordContext, recordFn RecordFunc) error {
 	v, err := dev.Cmd(READ_DATABASE_PAGES, []byte{byte(context.RecordType)}, MarshalUint32(context.PageNumber), []byte{1})
 	if err != nil {
@@ -88,7 +97,6 @@ func (dev Device) ReadPage(context *RecordContext, recordFn RecordFunc) error {
 	}
 
 	firstIndex := UnmarshalUint32(v[0:4])
-
 	numRecords := int(UnmarshalUint32(v[4:8]))
 
 	r := RecordType(v[8])
