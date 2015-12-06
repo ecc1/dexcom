@@ -24,6 +24,11 @@ func Open() (Device, error) {
 	return Device{port: port}, err
 }
 
+// Close closes the USB device.
+func (dev Device) Close() error {
+	return dev.port.Close()
+}
+
 // Cmd creates a Dexcom packet with the given command and parameters,
 // sends it to the device, and returns the response.
 func (dev Device) Cmd(cmd Command, params ...[]byte) ([]byte, error) {

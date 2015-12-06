@@ -19,6 +19,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer dev.Close()
 
 	displayTime, err := dev.ReadDisplayTime()
 	if err != nil {

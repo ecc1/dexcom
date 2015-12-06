@@ -12,6 +12,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer dev.Close()
 	var numRecords int
 	var startPage, endPage uint32
 	proc := func(_ []byte, context *dexcom.RecordContext) error {
