@@ -15,38 +15,37 @@ func printXMLData(name string, xmlData dexcom.XMLData) {
 }
 
 func main() {
-	dev, err := dexcom.Open()
+	err := dexcom.Open()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer dev.Close()
 
-	displayTime, err := dev.ReadDisplayTime()
+	displayTime, err := dexcom.ReadDisplayTime()
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("display time:", displayTime)
 
-	id, err := dev.Cmd(dexcom.READ_TRANSMITTER_ID)
+	id, err := dexcom.Cmd(dexcom.READ_TRANSMITTER_ID)
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Printf("transmitter ID: %s\n", string(id))
 
-	fw, err := dev.ReadFirmwareHeader()
+	fw, err := dexcom.ReadFirmwareHeader()
 	if err != nil {
 		log.Fatal(err)
 	}
 	printXMLData("firmware header", fw)
 
-	xr, err := dev.ReadXMLRecord(dexcom.MANUFACTURING_DATA)
+	xr, err := dexcom.ReadXMLRecord(dexcom.MANUFACTURING_DATA)
 	if err != nil {
 		log.Fatal(err)
 	}
 	printXMLData("manufacturing data", xr.XML)
 	fmt.Printf("    %v\n", xr.Timestamp)
 
-	xr, err = dev.ReadXMLRecord(dexcom.PC_SOFTWARE_PARAMETER)
+	xr, err = dexcom.ReadXMLRecord(dexcom.PC_SOFTWARE_PARAMETER)
 	if err != nil {
 		log.Fatal(err)
 	}

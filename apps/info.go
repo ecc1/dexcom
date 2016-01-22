@@ -8,11 +8,10 @@ import (
 )
 
 func main() {
-	dev, err := dexcom.Open()
+	err := dexcom.Open()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer dev.Close()
 	var numRecords int
 	var startPage, endPage uint32
 	proc := func(_ []byte, context *dexcom.RecordContext) error {
@@ -24,7 +23,7 @@ func main() {
 		numRecords = 0
 		startPage = 0
 		endPage = 0
-		dev.ReadRecords(t, proc)
+		dexcom.ReadRecords(t, proc)
 		fmt.Printf("%24s: %4d records, pp %d–%d\n", t.String(), numRecords, startPage, endPage)
 	}
 }

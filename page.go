@@ -40,8 +40,8 @@ type RecordContext struct {
 
 // ReadPageRange requests the StartPage and EndPage for a given RecordType
 // and returns a RecordContext with those values.
-func (dev Device) ReadPageRange(recordType RecordType) (*RecordContext, error) {
-	v, err := dev.Cmd(READ_DATABASE_PAGE_RANGE, []byte{byte(recordType)})
+func ReadPageRange(recordType RecordType) (*RecordContext, error) {
+	v, err := Cmd(READ_DATABASE_PAGE_RANGE, []byte{byte(recordType)})
 	if err != nil {
 		return nil, err
 	}
@@ -57,20 +57,20 @@ func (dev Device) ReadPageRange(recordType RecordType) (*RecordContext, error) {
 // for each record that is read by ReadPage.
 type RecordFunc func(record []byte, context *RecordContext) error
 
-func (dev Device) ReadRecords(recordType RecordType, recordFn RecordFunc) error {
-	context, err := dev.ReadPageRange(recordType)
+func ReadRecords(recordType RecordType, recordFn RecordFunc) error {
+	context, err := ReadPageRange(recordType)
 	if err != nil {
 		return err
 	}
-	return dev.IterRecords(context, recordFn)
+	return IterRecords(context, recordFn)
 }
 
 // IterRecords reads the pages of the type and range specified by the
 // given RecordContext and applies recordFn to each record in each page.
-func (dev Device) IterRecords(context *RecordContext, recordFn RecordFunc) error {
+func IterRecords(context *RecordContext, recordFn RecordFunc) error {
 	for n := context.StartPage; n <= context.EndPage; n++ {
 		context.PageNumber = n
-		err := dev.ReadPage(context, recordFn)
+		err := ReadPage(context, recordFn)
 		if err != nil {
 			return err
 		}
@@ -80,8 +80,8 @@ func (dev Device) IterRecords(context *RecordContext, recordFn RecordFunc) error
 
 // ReadPage reads a single page specified by the PageNumber field of the
 // given RecordContext and applies recordFn to each record in the page.
-func (dev Device) ReadPage(context *RecordContext, recordFn RecordFunc) error {
-	v, err := dev.Cmd(READ_DATABASE_PAGES, []byte{byte(context.RecordType)}, MarshalUint32(context.PageNumber), []byte{1})
+func ReadPage(context *RecordContext, recordFn RecordFunc) error {
+	v, err := Cmd(READ_DATABASE_PAGES, []byte{byte(context.RecordType)}, MarshalUint32(context.PageNumber), []byte{1})
 	if err != nil {
 		return err
 	}

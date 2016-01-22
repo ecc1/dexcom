@@ -3,14 +3,12 @@ package dexcom
 import (
 	"bytes"
 	"fmt"
-
-	"github.com/ecc1/usbserial"
 )
 
 const (
-	startOfMessage       = 1
-	minPacket = 6
-	maxPacket = 1590
+	startOfMessage = 1
+	minPacket      = 6
+	maxPacket      = 1590
 )
 
 func marshalPacket(cmd Command, params ...[]byte) []byte {
@@ -28,13 +26,13 @@ func marshalPacket(cmd Command, params ...[]byte) []byte {
 	return buf.Bytes()
 }
 
-func sendPacket(port usbserial.Port, pkt []byte) error {
-	return port.Write(pkt)
+func sendPacket(pkt []byte) error {
+	return conn.Send(pkt)
 }
 
-func receivePacket(port usbserial.Port) (cmd byte, data []byte, err error) {
+func receivePacket() (cmd byte, data []byte, err error) {
 	header := make([]byte, 4)
-	if err = port.Read(header); err != nil {
+	if err = conn.Receive(header); err != nil {
 		return
 	}
 	if header[0] != startOfMessage {
@@ -50,12 +48,12 @@ func receivePacket(port usbserial.Port) (cmd byte, data []byte, err error) {
 	n := length - minPacket
 	if n > 0 {
 		data = make([]byte, n)
-		if err = port.Read(data); err != nil {
+		if err = conn.Receive(data); err != nil {
 			return
 		}
 	}
 	crc := make([]byte, 2)
-	if err = port.Read(crc); err != nil {
+	if err = conn.Receive(crc); err != nil {
 		return
 	}
 	calc := crc16(append(header, data...))
@@ -64,4 +62,22 @@ func receivePacket(port usbserial.Port) (cmd byte, data []byte, err error) {
 		return
 	}
 	return
+}
+
+// Cmd creates a Dexcom packet with the given command and parameters,
+// sends it to the device, and returns the response.
+func Cmd(cmd Command, params ...[]byte) ([]byte, error) {
+	pkt := marshalPacket(cmd, params...)
+	err := sendPacket(pkt)
+	if err != nil {
+		return nil, err
+	}
+	ack, response, err := receivePacket()
+	if err != nil {
+		return nil, err
+	}
+	if ack != 1 {
+		return nil, fmt.Errorf("unexpected ack (%X)", ack)
+	}
+	return response, nil
 }

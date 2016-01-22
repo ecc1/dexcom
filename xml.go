@@ -29,8 +29,8 @@ func UnmarshalXMLData(v []byte) (XMLData, error) {
 
 // ReadFirmwareHeader gets the firmware header from the Dexcom CGM receiver
 // and returns it as XMLData.
-func (dev Device) ReadFirmwareHeader() (XMLData, error) {
-	p, err := dev.Cmd(READ_FIRMWARE_HEADER)
+func ReadFirmwareHeader() (XMLData, error) {
+	p, err := Cmd(READ_FIRMWARE_HEADER)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func UnmarshalXMLRecord(v []byte) (XMLRecord, error) {
 }
 
 // ReadXMLRecord gets the given XML record type from the Dexcom CGM receiver.
-func (dev Device) ReadXMLRecord(recordType RecordType) (XMLRecord, error) {
+func ReadXMLRecord(recordType RecordType) (XMLRecord, error) {
 	var xml XMLRecord
 	proc := func(v []byte, context *RecordContext) error {
 		// There should only be a single page, containing one record.
@@ -69,6 +69,6 @@ func (dev Device) ReadXMLRecord(recordType RecordType) (XMLRecord, error) {
 		xml, err = UnmarshalXMLRecord(v)
 		return err
 	}
-	err := dev.ReadRecords(recordType, proc)
+	err := ReadRecords(recordType, proc)
 	return xml, err
 }

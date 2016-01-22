@@ -7,11 +7,10 @@ import (
 )
 
 func main() {
-	dev, err := dexcom.Open()
+	err := dexcom.Open()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer dev.Close()
 
 	db := dexcom.OpenDB()
 	defer db.Close()
@@ -34,7 +33,7 @@ func main() {
 		}
 		return err
 	}
-	dev.ReadRecords(dexcom.EGV_DATA, proc)
+	dexcom.ReadRecords(dexcom.EGV_DATA, proc)
 	if n%80 != 0 {
 		fmt.Print("\n")
 	}

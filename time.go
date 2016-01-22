@@ -40,13 +40,13 @@ func displayTime(sys uint32, offset int32) time.Time {
 // DISPLAY_TIME = SYSTEM_TIME + DISPLAY_TIME_OFFSET
 
 // ReadDisplayTime gets the current display Time value from the Dexcom CGM receiver.
-func (dev Device) ReadDisplayTime() (time.Time, error) {
-	v, err := dev.Cmd(READ_DISPLAY_TIME_OFFSET)
+func ReadDisplayTime() (time.Time, error) {
+	v, err := Cmd(READ_DISPLAY_TIME_OFFSET)
 	if err != nil {
 		return time.Time{}, err
 	}
 	displayOffset := UnmarshalInt32(v)
-	v, err = dev.Cmd(READ_SYSTEM_TIME)
+	v, err = Cmd(READ_SYSTEM_TIME)
 	if err != nil {
 		return time.Time{}, err
 	}
