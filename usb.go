@@ -24,6 +24,10 @@ func OpenUSB() (Connection, error) {
 	return &usbConn{port: port}, nil
 }
 
+func (conn usbConn) Frame(data []byte) []byte {
+	return data
+}
+
 func (conn usbConn) Send(data []byte) error {
 	return conn.port.Write(data)
 }

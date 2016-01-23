@@ -27,7 +27,7 @@ func marshalPacket(cmd Command, params ...[]byte) []byte {
 }
 
 func sendPacket(pkt []byte) error {
-	return conn.Send(pkt)
+	return conn.Send(conn.Frame(pkt))
 }
 
 func receivePacket() (cmd byte, data []byte, err error) {

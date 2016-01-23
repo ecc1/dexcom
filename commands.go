@@ -1,9 +1,3 @@
-/*
-Package dexcom provides functions to access Dexcom CGM receivers
-over a USB connection.
-
-Based on the Python version at github.com/bewest/decoding-dexcom
-*/
 package dexcom
 
 // A Command specifies an operation to be performed by the Dexcom CGM receiver.
