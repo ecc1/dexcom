@@ -7,6 +7,7 @@ Based on the Python version at github.com/bewest/decoding-dexcom
 package dexcom
 
 import (
+	"fmt"
 	"log"
 )
 
@@ -23,9 +24,13 @@ var conn Connection
 func Open() error {
 	var err error
 	conn, err = OpenUSB()
-	if err != nil {
-		log.Println("USB:", err)
-		conn, err = OpenBLE()
+	if err == nil {
+		return nil
 	}
-	return err
+	log.Println("USB:", err)
+	conn, err = OpenBLE()
+	if err == nil {
+		return nil
+	}
+	return fmt.Errorf("BLE: %v", err)
 }
