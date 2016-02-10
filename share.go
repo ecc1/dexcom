@@ -4,41 +4,25 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/ecc1/ble"
 )
 
-const (
-	gattMTU = 20
-)
-
-var (
-	// service
-	receiverService = dexcomUUID(0xa0b1)
-
-	// characteristics
-	heartbeat      = dexcomUUID(0x2b18)
-	authentication = dexcomUUID(0xacac)
-	command        = dexcomUUID(0xb0cc)
-	response       = dexcomUUID(0xb0cd)
-	sendData       = dexcomUUID(0xb20a)
-	receiveData    = dexcomUUID(0xb20b)
-
-	authCode = []byte(serialNumber + "000000")
-)
-
-func dexcomUUID(id uint16) string {
-	return "f0ac" + fmt.Sprintf("%04x", id) + "-ebfa-f96f-28da-076c35a521db"
-}
-
 type bleConn struct {
-	txChar       ble.Characteristic
-	inputChannel chan byte
+	tx ble.Characteristic
+	rx chan byte
 }
 
+// Dexcom G4 Share expects each BLE message to start with two 01 bytes.
 func (conn *bleConn) Frame(data []byte) []byte {
 	return append([]byte{1, 1}, data...)
 }
+
+const (
+	// maximum size of writes to GATT characteristics
+	gattMTU = 20
+)
 
 func (conn *bleConn) Send(data []byte) error {
 	for {
@@ -49,7 +33,7 @@ func (conn *bleConn) Send(data []byte) error {
 		if n > gattMTU {
 			n = gattMTU
 		}
-		err := conn.txChar.WriteValue(data[:n])
+		err := conn.tx.WriteValue(data[:n])
 		if err != nil {
 			return err
 		}
@@ -59,7 +43,7 @@ func (conn *bleConn) Send(data []byte) error {
 
 func (conn *bleConn) Receive(data []byte) error {
 	for i := 0; i < len(data); i++ {
-		b, ok := <-conn.inputChannel
+		b, ok := <-conn.rx
 		if !ok {
 			return fmt.Errorf("input channel closed")
 		}
@@ -68,7 +52,52 @@ func (conn *bleConn) Receive(data []byte) error {
 	return nil
 }
 
-func authenticate(device ble.Device, objects *ble.ObjectCache) error {
+var (
+	objects *ble.ObjectCache
+	receiverService = dexcomUUID(0xa0b1)
+)
+
+func connect() error {
+	var err error
+	objects, err = ble.ManagedObjects()
+	if err != nil {
+		return err
+	}
+	device, err := objects.Discover(time.Minute, receiverService)
+	if err != nil {
+		return err
+	}
+	if !device.Connected() {
+		err = device.Connect()
+		if err != nil {
+			return err
+		}
+		log.Printf("%s: connected\n", device.Name())
+	} else {
+		log.Printf("%s: already connected\n", device.Name())
+	}
+	if !device.Paired() {
+		err = device.Pair()
+		if err != nil {
+			return err
+		}
+		log.Printf("%s: paired\n", device.Name())
+	} else {
+		log.Printf("%s: already paired\n", device.Name())
+	}
+	err = objects.Update()
+	if err != nil {
+		return err
+	}
+	return authenticate(device)
+}
+
+var (
+	authentication = dexcomUUID(0xacac)
+	authCode       = []byte(serialNumber + "000000")
+)
+
+func authenticate(device ble.Device) error {
 	auth, err := objects.GetCharacteristic(authentication)
 	if err != nil {
 		return err
@@ -89,79 +118,46 @@ func authenticate(device ble.Device, objects *ble.ObjectCache) error {
 	return nil
 }
 
+var (
+	heartbeat   = dexcomUUID(0x2b18)
+	sendData    = dexcomUUID(0xb20a)
+	receiveData = dexcomUUID(0xb20b)
+)
+
 func OpenBLE() (Connection, error) {
-	objects, err := ble.ManagedObjects()
+	err := connect()
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	device, err := objects.Discover(0, receiverService)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if !device.Connected() {
-		err = device.Connect()
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Printf("%s: connected\n", device.Name())
-	} else {
-		log.Printf("%s: already connected\n", device.Name())
-	}
-
-	if !device.Paired() {
-		err = device.Pair()
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Printf("%s: paired\n", device.Name())
-	} else {
-		log.Printf("%s: already paired\n", device.Name())
-	}
-
-	err = objects.Update()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = authenticate(device, objects)
-	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	// We need to enable heartbeat notifications
 	// or else we won't get any receiveData responses.
-	hbChar, err := objects.GetCharacteristic(heartbeat)
+	err = objects.HandleNotify(heartbeat, func(data []byte) {})
 	if err != nil {
-		log.Fatal(err)
-	}
-	err = hbChar.HandleNotify(func(data []byte) {})
-	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	rxChar, err := objects.GetCharacteristic(receiveData)
-	if err != nil {
-		log.Fatal(err)
-	}
-	inputChannel := make(chan byte, 1600)
-	err = rxChar.HandleNotify(func(data []byte) {
+	rx := make(chan byte, 1600)
+	err = objects.HandleNotify(receiveData, func(data []byte) {
 		for _, b := range data {
-			inputChannel <- b
+			rx <- b
 		}
 	})
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	txChar, err := objects.GetCharacteristic(sendData)
+	tx, err := objects.GetCharacteristic(sendData)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	return &bleConn{
-		txChar:       txChar,
-		inputChannel: inputChannel,
+		tx: tx,
+		rx: rx,
 	}, nil
+}
+
+func dexcomUUID(id uint16) string {
+	return "f0ac" + fmt.Sprintf("%04x", id) + "-ebfa-f96f-28da-076c35a521db"
 }
