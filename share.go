@@ -53,17 +53,11 @@ func (conn *bleConn) Receive(data []byte) error {
 }
 
 var (
-	objects *ble.ObjectCache
 	receiverService = dexcomUUID(0xa0b1)
 )
 
 func connect() error {
-	var err error
-	objects, err = ble.ManagedObjects()
-	if err != nil {
-		return err
-	}
-	device, err := objects.Discover(time.Minute, receiverService)
+	device, err := ble.Discover(time.Minute, receiverService)
 	if err != nil {
 		return err
 	}
@@ -85,7 +79,7 @@ func connect() error {
 	} else {
 		log.Printf("%s: already paired\n", device.Name())
 	}
-	err = objects.Update()
+	err = ble.Update()
 	if err != nil {
 		return err
 	}
@@ -98,7 +92,7 @@ var (
 )
 
 func authenticate(device ble.Device) error {
-	auth, err := objects.GetCharacteristic(authentication)
+	auth, err := ble.GetCharacteristic(authentication)
 	if err != nil {
 		return err
 	}
@@ -132,13 +126,13 @@ func OpenBLE() (Connection, error) {
 
 	// We need to enable heartbeat notifications
 	// or else we won't get any receiveData responses.
-	err = objects.HandleNotify(heartbeat, func(data []byte) {})
+	err = ble.HandleNotify(heartbeat, func(data []byte) {})
 	if err != nil {
 		return nil, err
 	}
 
 	rx := make(chan byte, 1600)
-	err = objects.HandleNotify(receiveData, func(data []byte) {
+	err = ble.HandleNotify(receiveData, func(data []byte) {
 		for _, b := range data {
 			rx <- b
 		}
@@ -147,7 +141,7 @@ func OpenBLE() (Connection, error) {
 		return nil, err
 	}
 
-	tx, err := objects.GetCharacteristic(sendData)
+	tx, err := ble.GetCharacteristic(sendData)
 	if err != nil {
 		return nil, err
 	}
