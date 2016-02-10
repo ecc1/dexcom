@@ -12,30 +12,40 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db := dexcom.OpenDB()
+	db, err := dexcom.OpenDB()
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer db.Close()
 
 	xact, err := db.Begin()
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	stmt, err := xact.Prepare(dexcom.InsertStmt)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	n := 0
-	proc := func(v []byte, context *dexcom.RecordContext) error {
-		_, err = stmt.Exec(dexcom.GlucoseRow(dexcom.UnmarshalEGVRecord(v)))
-		fmt.Print(".")
-		n++
-		if n%80 == 0 {
-			fmt.Print("\n")
-		}
-		return err
-	}
-	dexcom.ReadRecords(dexcom.EGV_DATA, proc)
+	dexcom.ReadRecords(
+		&dexcom.EGVRecord{},
+		func(record dexcom.Record, context *dexcom.RecordContext) error {
+			_, err = stmt.Exec(dexcom.GlucoseRow(record))
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Print(".")
+			n++
+			if n%80 == 0 {
+				fmt.Print("\n")
+			}
+			return err
+		})
 	if n%80 != 0 {
 		fmt.Print("\n")
 	}
+
 	xact.Commit()
 }

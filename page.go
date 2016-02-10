@@ -26,12 +26,15 @@ const (
 	USER_SETTING_DATA
 	FirstRecordType = MANUFACTURING_DATA
 	LastRecordType  = USER_SETTING_DATA
+
+	// internal record types for unmarshalling
+	timestampType
+	xmlDataType
 )
 
 // A RecordContext holds information about a range of pages of
 // a given record type during iteration over those records.
 type RecordContext struct {
-	RecordType RecordType
 	StartPage  uint32
 	EndPage    uint32
 	PageNumber uint32
@@ -46,31 +49,30 @@ func ReadPageRange(recordType RecordType) (*RecordContext, error) {
 		return nil, err
 	}
 	context := RecordContext{
-		RecordType: recordType,
-		StartPage:  UnmarshalUint32(v[:4]),
-		EndPage:    UnmarshalUint32(v[4:]),
+		StartPage: UnmarshalUint32(v[:4]),
+		EndPage:   UnmarshalUint32(v[4:]),
 	}
 	return &context, nil
 }
 
-// RecordFunc is the type signature of the procedure that is called
-// for each record that is read by ReadPage.
-type RecordFunc func(record []byte, context *RecordContext) error
+// The ReadPage function applies a function of type RecordFunc
+// to each record that it reads.
+type RecordFunc func(record Record, context *RecordContext) error
 
-func ReadRecords(recordType RecordType, recordFn RecordFunc) error {
-	context, err := ReadPageRange(recordType)
+func ReadRecords(record Record, recordFn RecordFunc) error {
+	context, err := ReadPageRange(record.Type())
 	if err != nil {
 		return err
 	}
-	return IterRecords(context, recordFn)
+	return IterRecords(context, record, recordFn)
 }
 
 // IterRecords reads the pages of the type and range specified by the
 // given RecordContext and applies recordFn to each record in each page.
-func IterRecords(context *RecordContext, recordFn RecordFunc) error {
+func IterRecords(context *RecordContext, record Record, recordFn RecordFunc) error {
 	for n := context.StartPage; n <= context.EndPage; n++ {
 		context.PageNumber = n
-		err := ReadPage(context, recordFn)
+		err := ReadPage(context, record, recordFn)
 		if err != nil {
 			return err
 		}
@@ -80,8 +82,8 @@ func IterRecords(context *RecordContext, recordFn RecordFunc) error {
 
 // ReadPage reads a single page specified by the PageNumber field of the
 // given RecordContext and applies recordFn to each record in the page.
-func ReadPage(context *RecordContext, recordFn RecordFunc) error {
-	v, err := Cmd(READ_DATABASE_PAGES, []byte{byte(context.RecordType)}, MarshalUint32(context.PageNumber), []byte{1})
+func ReadPage(context *RecordContext, record Record, recordFn RecordFunc) error {
+	v, err := Cmd(READ_DATABASE_PAGES, []byte{byte(record.Type())}, MarshalUint32(context.PageNumber), []byte{1})
 	if err != nil {
 		return err
 	}
@@ -93,22 +95,22 @@ func ReadPage(context *RecordContext, recordFn RecordFunc) error {
 	crc := v[26:28]
 	calc := crc16(v[:26])
 	if !bytes.Equal(crc, calc) {
-		return fmt.Errorf("bad page CRC (received %X, computed %X) in context %v", crc, calc, *context)
+		return fmt.Errorf("bad page CRC (received %X, computed %X) in context %#v", crc, calc, *context)
 	}
 
 	firstIndex := UnmarshalUint32(v[0:4])
 	numRecords := int(UnmarshalUint32(v[4:8]))
 
 	r := RecordType(v[8])
-	if r != context.RecordType {
-		return fmt.Errorf("unexpected record type %X in context %v", r, *context)
+	if r != record.Type() {
+		return fmt.Errorf("unexpected record type %X in context %#v", r, *context)
 	}
 
 	// rev := v[9]
 
 	p := UnmarshalUint32(v[10:14])
 	if p != context.PageNumber {
-		return fmt.Errorf("unexpected page number %X in context %v", p, *context)
+		return fmt.Errorf("unexpected page number %X in context %#v", p, *context)
 	}
 
 	// r1 := UnmarshalUint32(v[14:18])
@@ -128,7 +130,8 @@ func ReadPage(context *RecordContext, recordFn RecordFunc) error {
 	data = data[:dataLen]
 	recordLen := dataLen / numRecords
 
-	// slice data into records, validate per-record CRCs, and apply recordFn
+	// slice data into records, validate per-record CRCs,
+	// unmarshal record, and apply recordFn
 	for i := 0; i < numRecords; i++ {
 		context.Index = firstIndex + uint32(i)
 		rec := data[i*recordLen : (i+1)*recordLen]
@@ -136,9 +139,10 @@ func ReadPage(context *RecordContext, recordFn RecordFunc) error {
 		rec = rec[:recordLen-2]
 		calc := crc16(rec)
 		if !bytes.Equal(crc, calc) {
-			return fmt.Errorf("bad record CRC (received %X, computed %X) in context %v", crc, calc, *context)
+			return fmt.Errorf("bad record CRC (received %X, computed %X) in context %#v", crc, calc, *context)
 		}
-		err = recordFn(rec, context)
+		Unmarshal(rec, record)
+		err = recordFn(record, context)
 		if err != nil {
 			return err
 		}

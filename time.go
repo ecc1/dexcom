@@ -23,12 +23,14 @@ type Timestamp struct {
 	DisplayTime time.Time
 }
 
-// UnmarshalTimestamp unmarshals a byte array into a Timestamp.
-func UnmarshalTimestamp(v []byte) Timestamp {
-	return Timestamp{
-		SystemTime:  UnmarshalTime(v[0:4]),
-		DisplayTime: UnmarshalTime(v[4:8]),
-	}
+func (r *Timestamp) Type() RecordType {
+	return timestampType
+}
+
+func (r *Timestamp) Unmarshal(v []byte) error {
+	r.SystemTime = UnmarshalTime(v[0:4])
+	r.DisplayTime = UnmarshalTime(v[4:8])
+	return nil
 }
 
 func displayTime(sys uint32, offset int32) time.Time {

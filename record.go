@@ -5,6 +5,15 @@ import (
 	"time"
 )
 
+type Record interface {
+	Type() RecordType
+	Unmarshal([]byte) error
+}
+
+func Unmarshal(v []byte, record Record) error {
+	return record.Unmarshal(v)
+}
+
 // A SensorRecord contains a reading received from a Dexcom CGM sensor.
 type SensorRecord struct {
 	Timestamp  Timestamp
@@ -13,17 +22,19 @@ type SensorRecord struct {
 	RSSI       uint16
 }
 
-// UnmarshalSensorRecord unmarshals a byte array into a SensorRecord.
-func UnmarshalSensorRecord(v []byte) SensorRecord {
+func (r *SensorRecord) Type() RecordType {
+	return SENSOR_DATA
+}
+
+func (r *SensorRecord) Unmarshal(v []byte) error {
 	if len(v) != 18 {
-		panic(fmt.Sprintf("SensorRecord: wrong length (%d)", len(v)))
+		return fmt.Errorf("SensorRecord: wrong length (%d)", len(v))
 	}
-	return SensorRecord{
-		Timestamp:  UnmarshalTimestamp(v[0:8]),
-		Unfiltered: UnmarshalUint32(v[8:12]),
-		Filtered:   UnmarshalUint32(v[12:16]),
-		RSSI:       UnmarshalUint16(v[16:18]),
-	}
+	Unmarshal(v[0:8], &r.Timestamp)
+	r.Unfiltered = UnmarshalUint32(v[8:12])
+	r.Filtered = UnmarshalUint32(v[12:16])
+	r.RSSI = UnmarshalUint16(v[16:18])
+	return nil
 }
 
 // SpecialGlucose values are used to encode various exceptional conditions.
@@ -101,18 +112,20 @@ const (
 	EGV_TREND_ARROW_MASK = (1 << 4) - 1
 )
 
-// UnmarshalEGVRecord unmarshals a byte array into an EGVRecord.
-func UnmarshalEGVRecord(v []byte) EGVRecord {
+func (r *EGVRecord) Type() RecordType {
+	return EGV_DATA
+}
+
+func (r *EGVRecord) Unmarshal(v []byte) error {
 	if len(v) != 11 {
-		panic(fmt.Sprintf("EGVRecord: wrong length (%d)", len(v)))
+		return fmt.Errorf("EGVRecord: wrong length (%d)", len(v))
 	}
+	Unmarshal(v[0:8], &r.Timestamp)
 	g := UnmarshalUint16(v[8:10])
-	return EGVRecord{
-		Timestamp:   UnmarshalTimestamp(v[0:8]),
-		Glucose:     g & EGV_VALUE_MASK,
-		DisplayOnly: (g & EGV_DISPLAY_ONLY) != 0,
-		Trend:       Trend(v[10] & EGV_TREND_ARROW_MASK),
-	}
+	r.Glucose = g & EGV_VALUE_MASK
+	r.DisplayOnly = (g & EGV_DISPLAY_ONLY) != 0
+	r.Trend = Trend(v[10] & EGV_TREND_ARROW_MASK)
+	return nil
 }
 
 // A MeterRecord contains a glucometer reading.
@@ -122,14 +135,16 @@ type MeterRecord struct {
 	MeterTime time.Time
 }
 
-// UnmarshalMeterRecord unmarshals a byte array into a MeterRecord.
-func UnmarshalMeterRecord(v []byte) MeterRecord {
+func (r *MeterRecord) Type() RecordType {
+	return METER_DATA
+}
+
+func (r *MeterRecord) Unmarshal(v []byte) error {
 	if len(v) != 14 {
 		panic(fmt.Sprintf("MeterRecord: wrong length (%d)", len(v)))
 	}
-	return MeterRecord{
-		Timestamp: UnmarshalTimestamp(v[0:8]),
-		Glucose:   UnmarshalUint16(v[8:10]),
-		MeterTime: UnmarshalTime(v[10:14]),
-	}
+	Unmarshal(v[0:8], &r.Timestamp)
+	r.Glucose = UnmarshalUint16(v[8:10])
+	r.MeterTime = UnmarshalTime(v[10:14])
+	return nil
 }

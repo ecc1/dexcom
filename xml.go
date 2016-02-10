@@ -20,55 +20,56 @@ func (ptr *XMLData) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	return d.Skip()
 }
 
-// UnmashalXMLData unmarshals a byte array into an XMLData map.
-func UnmarshalXMLData(v []byte) (XMLData, error) {
-	m := XMLData(make(map[string]string))
-	err := xml.Unmarshal(v, &m)
-	return m, err
+func (r *XMLData) Type() RecordType {
+	return xmlDataType
+}
+
+func (r *XMLData) Unmarshal(v []byte) error {
+	*r = XMLData(make(map[string]string))
+	return xml.Unmarshal(v, r)
 }
 
 // ReadFirmwareHeader gets the firmware header from the Dexcom CGM receiver
 // and returns it as XMLData.
-func ReadFirmwareHeader() (XMLData, error) {
+func ReadFirmwareHeader() (xml XMLData, err error) {
 	p, err := Cmd(READ_FIRMWARE_HEADER)
 	if err != nil {
 		return nil, err
 	}
-	return UnmarshalXMLData(p)
+	err = Unmarshal(p, &xml)
+	return
 }
 
 // An XMLRecord contains timestamped XML data.
 type XMLRecord struct {
-	Timestamp Timestamp
-	XML       XMLData
+	recordType RecordType
+	Timestamp  Timestamp
+	XML        XMLData
 }
 
-// UnmarshalXMLRecord unmarshals a byte array into an XMLRecord.
-func UnmarshalXMLRecord(v []byte) (XMLRecord, error) {
+func (r *XMLRecord) Type() RecordType {
+	return r.recordType
+}
+
+func (r *XMLRecord) Unmarshal(v []byte) error {
 	p := v[8:]
 	i := bytes.IndexByte(p, 0x00)
 	if i != -1 {
 		p = p[:i]
 	}
-	xml, err := UnmarshalXMLData(p)
-	return XMLRecord{
-		Timestamp: UnmarshalTimestamp(v[0:8]),
-		XML:       xml,
-	}, err
+	Unmarshal(v[0:8], &r.Timestamp)
+	return Unmarshal(p, &r.XML)
 }
 
 // ReadXMLRecord gets the given XML record type from the Dexcom CGM receiver.
-func ReadXMLRecord(recordType RecordType) (XMLRecord, error) {
-	var xml XMLRecord
-	proc := func(v []byte, context *RecordContext) error {
+func ReadXMLRecord(recordType RecordType) (xml XMLRecord, err error) {
+	xml.recordType = recordType
+	err = ReadRecords(&xml, func(r Record, context *RecordContext) error {
 		// There should only be a single page, containing one record.
 		if context.Index != 0 || context.PageNumber != context.StartPage || context.StartPage != context.EndPage {
-			return fmt.Errorf("unexpected record context %v", *context)
+			return fmt.Errorf("unexpected record context %#v", *context)
 		}
-		var err error
-		xml, err = UnmarshalXMLRecord(v)
-		return err
-	}
-	err := ReadRecords(recordType, proc)
-	return xml, err
+		return nil
+	})
+	return
 }
