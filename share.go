@@ -153,5 +153,5 @@ func OpenBLE() (Connection, error) {
 }
 
 func dexcomUUID(id uint16) string {
-	return "f0ac" + fmt.Sprintf("%04x", id) + "-ebfa-f96f-28da-076c35a521db"
+	return fmt.Sprintf("f0ac%04x-ebfa-f96f-28da-076c35a521db", id)
 }
