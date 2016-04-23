@@ -1,6 +1,6 @@
 package dexcom
 
-//go:generate ./gen_crc_table/gen_crc_table
+//go:generate ../gen_crc_table/gen_crc_table
 
 func crc16(msg []byte) []byte {
 	res := uint16(0)
