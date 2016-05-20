@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/ecc1/ble"
@@ -88,10 +89,26 @@ func connect() error {
 
 var (
 	authentication = dexcomUUID(0xacac)
-	authCode       = []byte(serialNumber + "000000")
+	authEnvVar     = "DEXCOM_CGM_ID"
+	authCode       []byte
 )
 
+func initAuthCode() {
+	if len(authCode) != 0 {
+		return
+	}
+	id := os.Getenv(authEnvVar)
+	if len(id) == 0 {
+		log.Fatalf("%s environment variable is not set\n", authEnvVar)
+	}
+	if len(id) != 10 {
+		log.Fatalf("%s environment variable must be 2 letters followed by 8 digits\n", authEnvVar)
+	}
+	authCode = []byte(id + "000000")
+}
+
 func authenticate(device ble.Device) error {
+	initAuthCode()
 	auth, err := ble.GetCharacteristic(authentication)
 	if err != nil {
 		return err
