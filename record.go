@@ -107,9 +107,9 @@ type EGVRecord struct {
 }
 
 const (
-	EGV_DISPLAY_ONLY     = (1 << 15)
-	EGV_VALUE_MASK       = (1 << 10) - 1
-	EGV_TREND_ARROW_MASK = (1 << 4) - 1
+	EGV_DISPLAY_ONLY     = 1 << 15
+	EGV_VALUE_MASK       = 1<<10 - 1
+	EGV_TREND_ARROW_MASK = 1<<4 - 1
 )
 
 func (r *EGVRecord) Type() RecordType {
@@ -123,7 +123,7 @@ func (r *EGVRecord) Unmarshal(v []byte) error {
 	Unmarshal(v[0:8], &r.Timestamp)
 	g := UnmarshalUint16(v[8:10])
 	r.Glucose = g & EGV_VALUE_MASK
-	r.DisplayOnly = (g & EGV_DISPLAY_ONLY) != 0
+	r.DisplayOnly = g&EGV_DISPLAY_ONLY != 0
 	r.Trend = Trend(v[10] & EGV_TREND_ARROW_MASK)
 	return nil
 }
