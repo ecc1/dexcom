@@ -141,7 +141,7 @@ func (r *MeterRecord) Type() RecordType {
 
 func (r *MeterRecord) Unmarshal(v []byte) error {
 	if len(v) != 14 {
-		panic(fmt.Sprintf("MeterRecord: wrong length (%d)", len(v)))
+		return fmt.Errorf("MeterRecord: wrong length (%d)", len(v))
 	}
 	Unmarshal(v[0:8], &r.Timestamp)
 	r.Glucose = UnmarshalUint16(v[8:10])
