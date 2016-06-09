@@ -67,18 +67,18 @@ func connect() error {
 		if err != nil {
 			return err
 		}
-		log.Printf("%s: connected\n", device.Name())
+		log.Printf("%s: connected", device.Name())
 	} else {
-		log.Printf("%s: already connected\n", device.Name())
+		log.Printf("%s: already connected", device.Name())
 	}
 	if !device.Paired() {
 		err = device.Pair()
 		if err != nil {
 			return err
 		}
-		log.Printf("%s: paired\n", device.Name())
+		log.Printf("%s: paired", device.Name())
 	} else {
-		log.Printf("%s: already paired\n", device.Name())
+		log.Printf("%s: already paired", device.Name())
 	}
 	err = ble.Update()
 	if err != nil {
@@ -99,10 +99,10 @@ func initAuthCode() {
 	}
 	id := os.Getenv(authEnvVar)
 	if len(id) == 0 {
-		log.Fatalf("%s environment variable is not set\n", authEnvVar)
+		log.Fatalf("%s environment variable is not set", authEnvVar)
 	}
 	if len(id) != 10 {
-		log.Fatalf("%s environment variable must be 2 letters followed by 8 digits\n", authEnvVar)
+		log.Fatalf("%s environment variable must be 2 letters followed by 8 digits", authEnvVar)
 	}
 	authCode = []byte(id + "000000")
 }
@@ -118,14 +118,14 @@ func authenticate(device ble.Device) error {
 		return err
 	}
 	if bytes.Equal(data, authCode) {
-		log.Printf("%s: already authenticated\n", device.Name())
+		log.Printf("%s: already authenticated", device.Name())
 		return nil
 	}
 	err = auth.WriteValue(authCode)
 	if err != nil {
 		return err
 	}
-	log.Printf("%s: authenticated\n", device.Name())
+	log.Printf("%s: authenticated", device.Name())
 	return nil
 }
 
