@@ -1,7 +1,8 @@
 package dexcom
 
-//go:generate ../crcgen/crcgen
+//go:generate ../crcgen/crcgen -size 16 -poly 0x1021
 
+// Compute CRC-16 using CCITT polynomial.
 func crc16(msg []byte) []byte {
 	res := uint16(0)
 	for _, b := range msg {
