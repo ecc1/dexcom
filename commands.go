@@ -3,7 +3,7 @@ package dexcom
 // A Command specifies an operation to be performed by the Dexcom CGM receiver.
 type Command byte
 
-//go:generate stringer -type=Command
+//go:generate stringer -type Command
 
 const (
 	PING Command = 10 + iota

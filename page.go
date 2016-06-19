@@ -8,7 +8,7 @@ import (
 // A RecordType specifies a type of record stored by the Dexcom CGM receiver.
 type RecordType byte
 
-//go:generate stringer -type=RecordType
+//go:generate stringer -type RecordType
 
 const (
 	MANUFACTURING_DATA RecordType = iota

@@ -40,7 +40,7 @@ func (r *SensorRecord) Unmarshal(v []byte) error {
 // SpecialGlucose values are used to encode various exceptional conditions.
 type SpecialGlucose uint16
 
-//go:generate stringer -type=SpecialGlucose
+//go:generate stringer -type SpecialGlucose
 
 const (
 	SENSOR_NOT_ACTIVE SpecialGlucose = 1 + iota
@@ -67,7 +67,7 @@ func IsSpecial(glucose uint16) bool {
 // displayed by the Dexcom CGM receiver.
 type Trend byte
 
-//go:generate stringer -type=Trend
+//go:generate stringer -type Trend
 
 const (
 	UP_UP Trend = 1 + iota
