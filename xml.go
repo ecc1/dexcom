@@ -56,12 +56,12 @@ func (r *XMLRecord) Unmarshal(v []byte) error {
 // ReadXMLRecord gets the given XML record type from the Dexcom CGM receiver.
 func ReadXMLRecord(recordType RecordType) (XMLRecord, error) {
 	x := XMLRecord{}
-	proc := func(v []byte, context RecordContext) error {
+	proc := func(v []byte, context RecordContext) (bool, error) {
 		// There should only be a single page, containing one record.
 		if context.Index != 0 || context.PageNumber != context.StartPage || context.StartPage != context.EndPage {
-			return fmt.Errorf("unexpected record context %+v", context)
+			return false, fmt.Errorf("unexpected record context %+v", context)
 		}
-		return x.Unmarshal(v)
+		return true, x.Unmarshal(v)
 	}
 	err := ReadRecords(recordType, proc)
 	return x, err

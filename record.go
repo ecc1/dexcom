@@ -10,7 +10,7 @@ type SensorRecord struct {
 	Timestamp  Timestamp
 	Unfiltered uint32
 	Filtered   uint32
-	RSSI       uint16
+	Rssi       uint16
 }
 
 func (r *SensorRecord) Unmarshal(v []byte) error {
@@ -20,7 +20,7 @@ func (r *SensorRecord) Unmarshal(v []byte) error {
 	r.Timestamp.Unmarshal(v[0:8])
 	r.Unfiltered = UnmarshalUint32(v[8:12])
 	r.Filtered = UnmarshalUint32(v[12:16])
-	r.RSSI = UnmarshalUint16(v[16:18])
+	r.Rssi = UnmarshalUint16(v[16:18])
 	return nil
 }
 
@@ -82,8 +82,8 @@ func (t Trend) Symbol() string {
 	return trendSymbol[t]
 }
 
-// An EGVRecord contains a glucose reading calculated by the Dexcom CGM receiver.
-type EGVRecord struct {
+// An EgvRecord contains a glucose reading calculated by the Dexcom CGM receiver.
+type EgvRecord struct {
 	Timestamp   Timestamp
 	Glucose     uint16
 	DisplayOnly bool
@@ -96,9 +96,9 @@ const (
 	EGV_TREND_ARROW_MASK = 1<<4 - 1
 )
 
-func (r *EGVRecord) Unmarshal(v []byte) error {
+func (r *EgvRecord) Unmarshal(v []byte) error {
 	if len(v) != 11 {
-		return fmt.Errorf("EGVRecord: wrong length (%d)", len(v))
+		return fmt.Errorf("EgvRecord: wrong length (%d)", len(v))
 	}
 	r.Timestamp.Unmarshal(v[0:8])
 	g := UnmarshalUint16(v[8:10])
