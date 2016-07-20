@@ -33,22 +33,30 @@ func main() {
 		log.Fatal(err)
 	}
 	n := 0
-	dexcom.ReadRecords(
-		&dexcom.EGVRecord{},
-		func(record dexcom.Record, context *dexcom.RecordContext) error {
-			_, err = stmt.Exec(glucoseRow(record))
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Print(".")
-			n++
-			if n%80 == 0 {
-				fmt.Print("\n")
-			}
+	proc := func(v []byte, _ dexcom.RecordContext) error {
+		r := dexcom.EGVRecord{}
+		err := r.Unmarshal(v)
+		if err != nil {
 			return err
-		})
+		}
+		_, err = stmt.Exec(glucoseRow(r))
+		if err != nil {
+			return err
+		}
+		fmt.Print(".")
+		n++
+		if n%80 == 0 {
+			fmt.Println()
+		}
+		return nil
+	}
+	err = dexcom.ReadRecords(dexcom.EGV_DATA, proc)
 	if n%80 != 0 {
-		fmt.Print("\n")
+		fmt.Println()
+	}
+	if err != nil {
+		db.Close()
+		log.Fatal(err)
 	}
 	xact.Commit()
 	db.Close()
@@ -80,7 +88,6 @@ func OpenDB() *sql.DB {
 
 // glucoseRow returns the time and glucose value from an EGVRecord
 // suitable for inserting into the database.
-func glucoseRow(record dexcom.Record) (int64, uint16) {
-	egv := record.(*dexcom.EGVRecord)
+func glucoseRow(egv dexcom.EGVRecord) (int64, uint16) {
 	return egv.Timestamp.DisplayTime.Round(time.Second).Unix(), egv.Glucose
 }

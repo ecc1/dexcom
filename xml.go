@@ -20,35 +20,27 @@ func (ptr *XMLData) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	return d.Skip()
 }
 
-func (r *XMLData) Type() RecordType {
-	return xmlDataType
-}
-
 func (r *XMLData) Unmarshal(v []byte) error {
-	*r = XMLData(make(map[string]string))
+	*r = make(map[string]string)
 	return xml.Unmarshal(v, r)
 }
 
 // ReadFirmwareHeader gets the firmware header from the Dexcom CGM receiver
 // and returns it as XMLData.
-func ReadFirmwareHeader() (xml XMLData, err error) {
+func ReadFirmwareHeader() (XMLData, error) {
+	x := XMLData{}
 	p, err := Cmd(READ_FIRMWARE_HEADER)
 	if err != nil {
-		return nil, err
+		return x, err
 	}
-	err = Unmarshal(p, &xml)
-	return
+	err = x.Unmarshal(p)
+	return x, err
 }
 
 // An XMLRecord contains timestamped XML data.
 type XMLRecord struct {
-	recordType RecordType
-	Timestamp  Timestamp
-	XML        XMLData
-}
-
-func (r *XMLRecord) Type() RecordType {
-	return r.recordType
+	Timestamp Timestamp
+	XML       XMLData
 }
 
 func (r *XMLRecord) Unmarshal(v []byte) error {
@@ -57,19 +49,20 @@ func (r *XMLRecord) Unmarshal(v []byte) error {
 	if i != -1 {
 		p = p[:i]
 	}
-	Unmarshal(v[0:8], &r.Timestamp)
-	return Unmarshal(p, &r.XML)
+	r.Timestamp.Unmarshal(v[0:8])
+	return r.XML.Unmarshal(p)
 }
 
 // ReadXMLRecord gets the given XML record type from the Dexcom CGM receiver.
-func ReadXMLRecord(recordType RecordType) (xml XMLRecord, err error) {
-	xml.recordType = recordType
-	err = ReadRecords(&xml, func(r Record, context *RecordContext) error {
+func ReadXMLRecord(recordType RecordType) (XMLRecord, error) {
+	x := XMLRecord{}
+	proc := func(v []byte, context RecordContext) error {
 		// There should only be a single page, containing one record.
 		if context.Index != 0 || context.PageNumber != context.StartPage || context.StartPage != context.EndPage {
-			return fmt.Errorf("unexpected record context %#v", *context)
+			return fmt.Errorf("unexpected record context %+v", context)
 		}
-		return nil
-	})
-	return
+		return x.Unmarshal(v)
+	}
+	err := ReadRecords(recordType, proc)
+	return x, err
 }
