@@ -129,14 +129,17 @@ func ReadPage(context RecordContext, recordFn RecordFunc) (bool, error) {
 	dataLen := len(data)
 
 	// Remove padding (trailing 0xFF bytes) and compute record length.
-	for i := 1; i <= dataLen; i++ {
-		if data[dataLen-i] != 0xFF {
-			dataLen -= i - 1
+	for dataLen > 0 {
+		if data[dataLen-1] != 0xFF {
 			break
 		}
+		dataLen--
 	}
-	data = data[:dataLen]
+	// Round dataLen up to a multiple of numRecords so we keep
+	// any 0xFF bytes that are part of the last record.
+	dataLen = ((dataLen + numRecords - 1) / numRecords) * numRecords
 	recordLen := dataLen / numRecords
+	data = data[:dataLen]
 
 	// Slice data into records, validate per-record CRCs, and apply recordFn.
 	// Iterate in reverse order to facilitate scanning for recent records.
