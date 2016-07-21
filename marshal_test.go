@@ -18,11 +18,11 @@ func TestMarshalUint16(t *testing.T) {
 	for _, c := range cases {
 		rep := MarshalUint16(c.val)
 		if !bytes.Equal(rep, c.rep) {
-			t.Errorf("MarshalUint16(%X) == %X, want %X", c.val, rep, c.rep)
+			t.Errorf("MarshalUint16(%04X) == % X, want % X", c.val, rep, c.rep)
 		}
 		val := UnmarshalUint16(c.rep)
 		if val != c.val {
-			t.Errorf("UnmarshalUint16(%X) == %X, want %X", c.rep, val, c.val)
+			t.Errorf("UnmarshalUint16(% X) == %04X, want %04X", c.rep, val, c.val)
 		}
 	}
 }
@@ -39,11 +39,11 @@ func TestMarshalUint32(t *testing.T) {
 	for _, c := range cases {
 		rep := MarshalUint32(c.val)
 		if !bytes.Equal(rep, c.rep) {
-			t.Errorf("MarshalUint32(%X) == %X, want %X", c.val, rep, c.rep)
+			t.Errorf("MarshalUint32(%08X) == % X, want % X", c.val, rep, c.rep)
 		}
 		val := UnmarshalUint32(c.rep)
 		if val != c.val {
-			t.Errorf("UnmarshalUint32(%X) == %X, want %X", c.rep, val, c.val)
+			t.Errorf("UnmarshalUint32(% X) == %08X, want %08X", c.rep, val, c.val)
 		}
 	}
 }
@@ -64,11 +64,29 @@ func TestMarshalInt32(t *testing.T) {
 	for _, c := range cases {
 		rep := MarshalInt32(c.val)
 		if !bytes.Equal(rep, c.rep) {
-			t.Errorf("MarshalInt32(%X) == %X, want %X", c.val, rep, c.rep)
+			t.Errorf("MarshalInt32(%08X) == % X, want % X", c.val, rep, c.rep)
 		}
 		val := UnmarshalInt32(c.rep)
 		if val != c.val {
-			t.Errorf("UnmarshalInt32(%X) == %X, want %X", c.rep, val, c.val)
+			t.Errorf("UnmarshalInt32(% X) == %08X, want %08X", c.rep, val, c.val)
+		}
+	}
+}
+
+func TestUnmarshalFloat64(t *testing.T) {
+	cases := []struct {
+		rep []byte
+		val float64
+	}{
+		{[]byte{0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, math.SmallestNonzeroFloat64},
+		{[]byte{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEF, 0x7F}, math.MaxFloat64},
+		{[]byte{0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0xD5, 0x3F}, 0.3333333333333333},
+		{[]byte{0x18, 0x2D, 0x44, 0x54, 0xFB, 0x21, 0x09, 0x40}, 3.141592653589793},
+	}
+	for _, c := range cases {
+		val := UnmarshalFloat64(c.rep)
+		if val != c.val {
+			t.Errorf("UnmarshalFloat64(% X) == %v, want %v", c.rep, val, c.val)
 		}
 	}
 }

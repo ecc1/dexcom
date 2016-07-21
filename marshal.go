@@ -1,5 +1,9 @@
 package dexcom
 
+import (
+	"math"
+)
+
 // MarshalUint16 marshals a uint16 value into 2 bytes in little-endian order.
 func MarshalUint16(n uint16) []byte {
 	return []byte{byte(n & 0xFF), byte(n >> 8)}
@@ -28,4 +32,14 @@ func UnmarshalUint32(v []byte) uint32 {
 // UnmarshalInt32 unmarshals 4 bytes in little-endian order into an int32 value.
 func UnmarshalInt32(v []byte) int32 {
 	return int32(UnmarshalUint32(v))
+}
+
+// UnmarshalUint64 unmarshals 8 bytes in little-endian order into a uint64 value.
+func UnmarshalUint64(v []byte) uint64 {
+	return uint64(UnmarshalUint32(v[0:4])) | uint64(UnmarshalUint32(v[4:8]))<<32
+}
+
+// UnmarshalFloat64 unmarshals 8 bytes in little-endian order into a float64 value.
+func UnmarshalFloat64(v []byte) float64 {
+	return math.Float64frombits(UnmarshalUint64(v))
 }
