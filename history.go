@@ -76,3 +76,61 @@ func ReadCalibrationRecords(since time.Time) ([]CalibrationRecord, error) {
 	err = IterRecords(context, proc)
 	return results, err
 }
+
+type GlucoseReading struct {
+	Egv    EgvRecord
+	Sensor SensorRecord
+}
+
+const (
+	// Time window within which EGV and sensor readings will be merged.
+	glucoseReadingWindow = 2 * time.Second
+)
+
+func withinWindow(t1, t2 time.Time, window time.Duration) bool {
+	d := t1.Sub(t2)
+	return (0 <= d && d < window) || (0 <= -d && -d < window)
+}
+
+func GlucoseReadings(since time.Time) ([]GlucoseReading, error) {
+	egv, err := ReadEgvRecords(since)
+	if err != nil {
+		return nil, err
+	}
+	numEgv := len(egv)
+	sensor, err := ReadSensorRecords(since)
+	if err != nil {
+		return nil, err
+	}
+	numSensor := len(sensor)
+	readings := []GlucoseReading{}
+	i, j := 0, 0
+	for {
+		r := GlucoseReading{}
+		if i < numEgv && j < numSensor {
+			egvTime := egv[i].Timestamp.DisplayTime
+			sensorTime := sensor[j].Timestamp.DisplayTime
+			if withinWindow(egvTime, sensorTime, glucoseReadingWindow) {
+				r = GlucoseReading{Egv: egv[i], Sensor: sensor[j]}
+				i++
+				j++
+			} else if egvTime.After(sensorTime) {
+				r = GlucoseReading{Egv: egv[i]}
+				i++
+			} else {
+				r = GlucoseReading{Sensor: sensor[j]}
+				j++
+			}
+		} else if i < numEgv {
+			r = GlucoseReading{Egv: egv[i]}
+			i++
+		} else if j < numSensor {
+			r = GlucoseReading{Sensor: sensor[j]}
+			j++
+		} else {
+			break
+		}
+		readings = append(readings, r)
+	}
+	return readings, nil
+}
