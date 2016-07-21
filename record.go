@@ -124,3 +124,47 @@ func (r *MeterRecord) Unmarshal(v []byte) error {
 	r.MeterTime = UnmarshalTime(v[10:14])
 	return nil
 }
+
+// A CalibrationRecord contains sensor calibration data.
+type CalibrationRecord struct {
+	Timestamp Timestamp
+	Slope     float64
+	Intercept float64
+	Scale     float64
+	Decay     float64
+	Data      []CalibrationData
+}
+
+func (r *CalibrationRecord) Unmarshal(v []byte) error {
+	r.Timestamp.Unmarshal(v[0:8])
+	r.Slope = UnmarshalFloat64(v[8:16])
+	r.Intercept = UnmarshalFloat64(v[16:24])
+	r.Scale = UnmarshalFloat64(v[24:32])
+	r.Decay = UnmarshalFloat64(v[35:43])
+	n := int(v[43])
+	r.Data = make([]CalibrationData, n)
+	v = v[44:]
+	offset := r.Timestamp.DisplayTime.Sub(r.Timestamp.SystemTime)
+	for i := 0; i < n; i++ {
+		r.Data[i].Unmarshal(v)
+		r.Data[i].TimeEntered = r.Data[i].TimeEntered.Add(offset)
+		r.Data[i].TimeApplied = r.Data[i].TimeApplied.Add(offset)
+		v = v[17:]
+	}
+	return nil
+}
+
+type CalibrationData struct {
+	TimeEntered time.Time
+	Glucose     int32
+	Raw         int32
+	TimeApplied time.Time
+}
+
+func (r *CalibrationData) Unmarshal(v []byte) error {
+	r.TimeEntered = UnmarshalTime(v[0:4])
+	r.Glucose = UnmarshalInt32(v[4:8])
+	r.Raw = UnmarshalInt32(v[8:12])
+	r.TimeApplied = UnmarshalTime(v[12:16])
+	return nil
+}
