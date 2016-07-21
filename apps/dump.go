@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"os/user"
 	"path/filepath"
@@ -17,14 +16,18 @@ const (
 )
 
 func main() {
-	err := dexcom.Open()
-	if err != nil {
-		log.Fatal(err)
-	}
 	db := OpenDB()
 	xact, err := db.Begin()
 	if err != nil {
 		db.Close()
+		log.Fatal(err)
+	}
+	err = dexcom.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
+	egv, err := dexcom.ReadEgvRecords(time.Time{})
+	if err != nil {
 		log.Fatal(err)
 	}
 	stmt, err := xact.Prepare("insert into glucose values (?, ?)")
@@ -32,31 +35,12 @@ func main() {
 		db.Close()
 		log.Fatal(err)
 	}
-	n := 0
-	proc := func(v []byte, _ dexcom.RecordContext) error {
-		r := dexcom.EGVRecord{}
-		err := r.Unmarshal(v)
-		if err != nil {
-			return err
-		}
+	for _, r := range egv {
 		_, err = stmt.Exec(glucoseRow(r))
 		if err != nil {
-			return err
+			db.Close()
+			log.Fatal(err)
 		}
-		fmt.Print(".")
-		n++
-		if n%80 == 0 {
-			fmt.Println()
-		}
-		return nil
-	}
-	err = dexcom.ReadRecords(dexcom.EGV_DATA, proc)
-	if n%80 != 0 {
-		fmt.Println()
-	}
-	if err != nil {
-		db.Close()
-		log.Fatal(err)
 	}
 	xact.Commit()
 	db.Close()
@@ -88,6 +72,7 @@ func OpenDB() *sql.DB {
 
 // glucoseRow returns the time and glucose value from an EGVRecord
 // suitable for inserting into the database.
-func glucoseRow(egv dexcom.EGVRecord) (int64, uint16) {
-	return egv.Timestamp.DisplayTime.Round(time.Second).Unix(), egv.Glucose
+func glucoseRow(egv dexcom.EgvRecord) (int64, uint16) {
+	t := egv.Timestamp.DisplayTime
+	return t.Unix(), egv.Glucose
 }
