@@ -60,9 +60,9 @@ func (cgm *Cgm) ReadXMLRecord(recordType RecordType) XMLRecord {
 	proc := func(v []byte, context RecordContext) (bool, error) {
 		// There should only be a single page, containing one record.
 		if context.Index != 0 || context.PageNumber != context.StartPage || context.StartPage != context.EndPage {
-			return false, fmt.Errorf("unexpected record context %+v", context)
+			return true, fmt.Errorf("unexpected record context %+v", context)
 		}
-		return true, x.Unmarshal(v)
+		return false, x.Unmarshal(v)
 	}
 	cgm.ReadRecords(recordType, proc)
 	return x

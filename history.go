@@ -15,15 +15,15 @@ func (cgm *Cgm) ReadEgvRecords(since time.Time) []EgvRecord {
 		r := EgvRecord{}
 		err := r.Unmarshal(v)
 		if err != nil {
-			return false, err
+			return true, err
 		}
 		t := r.Timestamp.DisplayTime
 		if t.Before(since) {
 			log.Printf("stopping at timestamp %s", t.Format(time.RFC3339))
-			return false, nil
+			return true, nil
 		}
 		results = append(results, r)
-		return true, nil
+		return false, nil
 	}
 	cgm.IterRecords(context, proc)
 	return results
@@ -39,15 +39,15 @@ func (cgm *Cgm) ReadSensorRecords(since time.Time) []SensorRecord {
 		r := SensorRecord{}
 		err := r.Unmarshal(v)
 		if err != nil {
-			return false, err
+			return true, err
 		}
 		t := r.Timestamp.DisplayTime
 		if t.Before(since) {
 			log.Printf("stopping at timestamp %s", t.Format(time.RFC3339))
-			return false, nil
+			return true, nil
 		}
 		results = append(results, r)
-		return true, nil
+		return false, nil
 	}
 	cgm.IterRecords(context, proc)
 	return results
@@ -63,15 +63,15 @@ func (cgm *Cgm) ReadCalibrationRecords(since time.Time) []CalibrationRecord {
 		r := CalibrationRecord{}
 		err := r.Unmarshal(v)
 		if err != nil {
-			return false, err
+			return true, err
 		}
 		t := r.Timestamp.DisplayTime
 		if t.Before(since) {
 			log.Printf("stopping at timestamp %s", t.Format(time.RFC3339))
-			return false, nil
+			return true, nil
 		}
 		results = append(results, r)
-		return true, nil
+		return false, nil
 	}
 	cgm.IterRecords(context, proc)
 	return results
