@@ -90,22 +90,26 @@ var (
 	authCode       = []byte{}
 )
 
-func initAuthCode() {
+func initAuthCode() error {
 	if len(authCode) != 0 {
-		return
+		return nil
 	}
 	id := os.Getenv(authEnvVar)
 	if len(id) == 0 {
-		log.Fatalf("%s environment variable is not set", authEnvVar)
+		return fmt.Errorf("%s environment variable is not set", authEnvVar)
 	}
 	if len(id) != 10 {
-		log.Fatalf("%s environment variable must be 2 letters followed by 8 digits", authEnvVar)
+		return fmt.Errorf("%s environment variable must be 2 letters followed by 8 digits", authEnvVar)
 	}
 	authCode = []byte(id + "000000")
+	return nil
 }
 
 func authenticate(device ble.Device) error {
-	initAuthCode()
+	err := initAuthCode()
+	if err != nil {
+		return err
+	}
 	auth, err := ble.GetCharacteristic(authentication)
 	if err != nil {
 		return err
