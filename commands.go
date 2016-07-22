@@ -6,6 +6,14 @@ type Command byte
 //go:generate stringer -type Command
 
 const (
+	NULL                          Command = 0
+	ACK                           Command = 1
+	NAK                           Command = 2
+	INVALID_COMMAND               Command = 3
+	INVALID_PARAM                 Command = 4
+	INCOMPLETE_PACKET_RECEIVED    Command = 5
+	RECEIVER_ERROR                Command = 6
+	INVALID_MODE                  Command = 7
 	PING                          Command = 10
 	READ_FIRMWARE_HEADER          Command = 11
 	READ_DATABASE_PARTITION_INFO  Command = 15

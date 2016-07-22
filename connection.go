@@ -11,22 +11,33 @@ import (
 )
 
 type Connection interface {
-	Frame([]byte) []byte
 	Send([]byte) error
 	Receive([]byte) error
+	Close()
 }
 
-var conn Connection
+type Cgm struct {
+	conn Connection
+	err  error
+}
 
 // Open first attempts to open a USB connection;
 // if that fails it tries a BLE connection.
-func Open() error {
-	var err error
-	conn, err = OpenUSB()
-	if err == nil {
-		return nil
+func Open() *Cgm {
+	cgm := &Cgm{}
+	cgm.conn, cgm.err = OpenUSB()
+	if cgm.err == nil {
+		return cgm
 	}
-	log.Println("USB:", err)
-	conn, err = OpenBLE()
-	return err
+	log.Println("USB:", cgm.err)
+	cgm.conn, cgm.err = OpenBLE()
+	return cgm
+}
+
+func (cgm *Cgm) Error() error {
+	return cgm.err
+}
+
+func (cgm *Cgm) SetError(err error) {
+	cgm.err = err
 }

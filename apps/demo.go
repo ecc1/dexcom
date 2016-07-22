@@ -15,40 +15,19 @@ func printXMLData(name string, xmlData dexcom.XMLData) {
 }
 
 func main() {
-	err := dexcom.Open()
-	if err != nil {
-		log.Fatal(err)
+	cgm := dexcom.Open()
+	if cgm.Error() != nil {
+		log.Fatal(cgm.Error())
 	}
+	fmt.Println("display time:", cgm.ReadDisplayTime())
+	fmt.Println("transmitter ID:", string(cgm.Cmd(dexcom.READ_TRANSMITTER_ID)))
+	printXMLData("firmware header", cgm.ReadFirmwareHeader())
 
-	displayTime, err := dexcom.ReadDisplayTime()
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("display time:", displayTime)
+	hw := cgm.ReadXMLRecord(dexcom.MANUFACTURING_DATA)
+	printXMLData("manufacturing data", hw.XML)
+	fmt.Printf("    %+v\n", hw.Timestamp)
 
-	id, err := dexcom.Cmd(dexcom.READ_TRANSMITTER_ID)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("transmitter ID: %s\n", string(id))
-
-	fw, err := dexcom.ReadFirmwareHeader()
-	if err != nil {
-		log.Fatal(err)
-	}
-	printXMLData("firmware header", fw)
-
-	xr, err := dexcom.ReadXMLRecord(dexcom.MANUFACTURING_DATA)
-	if err != nil {
-		log.Fatal(err)
-	}
-	printXMLData("manufacturing data", xr.XML)
-	fmt.Printf("    %v\n", xr.Timestamp)
-
-	xr, err = dexcom.ReadXMLRecord(dexcom.PC_SOFTWARE_PARAMETER)
-	if err != nil {
-		log.Fatal(err)
-	}
-	printXMLData("PC software parameter", xr.XML)
-	fmt.Printf("    %v\n", xr.Timestamp)
+	sw := cgm.ReadXMLRecord(dexcom.PC_SOFTWARE_PARAMETER)
+	printXMLData("PC software parameter", sw.XML)
+	fmt.Printf("    %+v\n", sw.Timestamp)
 }

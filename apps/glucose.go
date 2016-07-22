@@ -21,19 +21,16 @@ var (
 func main() {
 	flag.Parse()
 	cutoff := time.Time{}
-	err := dexcom.Open()
-	if err != nil {
-		log.Fatal(err)
-	}
+	cgm := dexcom.Open()
 	if *all {
 		log.Printf("retrieving all glucose records")
 	} else {
 		cutoff = time.Now().Add(-time.Duration(*numMinutes) * time.Minute)
 		log.Printf("retrieving records since %s", cutoff.Format(time.RFC3339))
 	}
-	readings, err := dexcom.GlucoseReadings(cutoff)
-	if err != nil {
-		log.Fatal(err)
+	readings := cgm.GlucoseReadings(cutoff)
+	if cgm.Error() != nil {
+		log.Fatal(cgm.Error())
 	}
 	for _, r := range readings {
 		printReading(r)

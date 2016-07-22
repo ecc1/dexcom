@@ -22,13 +22,10 @@ func main() {
 		db.Close()
 		log.Fatal(err)
 	}
-	err = dexcom.Open()
-	if err != nil {
-		log.Fatal(err)
-	}
-	egv, err := dexcom.ReadEgvRecords(time.Time{})
-	if err != nil {
-		log.Fatal(err)
+	cgm := dexcom.Open()
+	egv := cgm.ReadEgvRecords(time.Time{})
+	if cgm.Error() != nil {
+		log.Fatal(cgm.Error())
 	}
 	stmt, err := xact.Prepare("insert into glucose values (?, ?)")
 	if err != nil {

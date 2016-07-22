@@ -23,69 +23,65 @@ func marshalPacket(cmd Command, data []byte) []byte {
 	return buf.Bytes()
 }
 
-func sendPacket(pkt []byte) error {
-	return conn.Send(conn.Frame(pkt))
+func (cgm *Cgm) sendPacket(pkt []byte) {
+	err := cgm.conn.Send(pkt)
+	cgm.SetError(err)
 }
 
-func receivePacket() (cmd byte, data []byte, err error) {
+func (cgm *Cgm) receivePacket() []byte {
 	header := make([]byte, 4)
-	err = conn.Receive(header)
+	err := cgm.conn.Receive(header)
 	if err != nil {
-		return
+		cgm.SetError(err)
+		return nil
 	}
 	if header[0] != startOfMessage {
-		err = fmt.Errorf("unexpected message header (% X)", header)
-		return
+		cgm.SetError(fmt.Errorf("unexpected message header % X", header))
+		return nil
 	}
-	cmd = header[3]
+	ack := Command(header[3])
+	if ack != ACK {
+		cgm.SetError(fmt.Errorf("unexpected response code %02X in header % X", ack, header))
+		return nil
+	}
 	length := UnmarshalUint16(header[1:3])
 	if length < minPacket || length > maxPacket {
-		err = fmt.Errorf("invalid packet length (%d) in header (% X)", length, header)
-		return
+		cgm.SetError(fmt.Errorf("invalid packet length %d in header % X", length, header))
+		return nil
 	}
 	n := length - minPacket
-	if n > 0 {
-		data = make([]byte, n)
-		err = conn.Receive(data)
-		if err != nil {
-			return
-		}
-	}
-	crcBuf := make([]byte, 2)
-	err = conn.Receive(crcBuf)
+	data := make([]byte, n+2)
+	err = cgm.conn.Receive(data)
 	if err != nil {
-		return
+		cgm.SetError(err)
+		return nil
 	}
-	crc := UnmarshalUint16(crcBuf)
+	crc := UnmarshalUint16(data[n:])
+	data = data[:n]
 	body := append(header, data...)
 	calc := crc16(body)
 	if crc != calc {
-		err = CrcError{
+		cgm.SetError(CrcError{
 			Kind:     "packet",
 			Received: crc,
 			Computed: calc,
 			Context:  nil,
 			Data:     body,
-		}
-		return
+		})
 	}
-	return
+	return data
 }
 
 // Cmd creates a Dexcom packet with the given command and parameters,
 // sends it to the device, and returns the response.
-func Cmd(cmd Command, params ...byte) ([]byte, error) {
+func (cgm *Cgm) Cmd(cmd Command, params ...byte) []byte {
+	if cgm.Error() != nil {
+		return nil
+	}
 	pkt := marshalPacket(cmd, params)
-	err := sendPacket(pkt)
-	if err != nil {
-		return nil, err
+	cgm.sendPacket(pkt)
+	if cgm.Error() != nil {
+		return nil
 	}
-	ack, response, err := receivePacket()
-	if err != nil {
-		return nil, err
-	}
-	if ack != 1 {
-		return nil, fmt.Errorf("unexpected ack (%X) in response (% X)", ack, response)
-	}
-	return response, nil
+	return cgm.receivePacket()
 }

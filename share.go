@@ -15,17 +15,14 @@ type bleConn struct {
 	rx chan byte
 }
 
-// Dexcom G4 Share expects each BLE message to start with two 01 bytes.
-func (conn *bleConn) Frame(data []byte) []byte {
-	return append([]byte{1, 1}, data...)
-}
-
 const (
 	// maximum size of writes to GATT characteristics
 	gattMTU = 20
 )
 
 func (conn *bleConn) Send(data []byte) error {
+	// Dexcom G4 Share expects each BLE message to start with two 01 bytes.
+	data = append([]byte{0x01, 0x01}, data...)
 	for {
 		n := len(data)
 		if n == 0 {
@@ -90,7 +87,7 @@ func connect() error {
 var (
 	authentication = dexcomUUID(0xacac)
 	authEnvVar     = "DEXCOM_CGM_ID"
-	authCode       []byte
+	authCode       = []byte{}
 )
 
 func initAuthCode() {
@@ -163,12 +160,11 @@ func OpenBLE() (Connection, error) {
 		return nil, err
 	}
 
-	return &bleConn{
-		tx: tx,
-		rx: rx,
-	}, nil
+	return &bleConn{tx: tx, rx: rx}, nil
 }
 
 func dexcomUUID(id uint16) string {
 	return fmt.Sprintf("f0ac%04x-ebfa-f96f-28da-076c35a521db", id)
 }
+
+func (*bleConn) Close() {}

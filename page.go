@@ -46,17 +46,16 @@ type RecordContext struct {
 // ReadPageRange requests the StartPage and EndPage for a given RecordType
 // and returns a RecordContext with those values.  The page numbers
 // can be -1 if there are no entries (for example, USER_EVENT_DATA).
-func ReadPageRange(recordType RecordType) (RecordContext, error) {
-	v, err := Cmd(READ_DATABASE_PAGE_RANGE, byte(recordType))
-	if err != nil {
-		return RecordContext{}, err
+func (cgm *Cgm) ReadPageRange(recordType RecordType) RecordContext {
+	v := cgm.Cmd(READ_DATABASE_PAGE_RANGE, byte(recordType))
+	if cgm.Error() != nil {
+		return RecordContext{}
 	}
-	context := RecordContext{
+	return RecordContext{
 		RecordType: recordType,
 		StartPage:  int(UnmarshalInt32(v[:4])),
 		EndPage:    int(UnmarshalInt32(v[4:])),
 	}
-	return context, nil
 }
 
 // The ReadPage function applies a function of type RecordFunc
@@ -80,45 +79,47 @@ func (e CrcError) Error() string {
 
 // ReadPage reads a single page specified by the PageNumber field of the
 // given RecordContext and applies recordFn to each record in the page.
-func ReadPage(context RecordContext, recordFn RecordFunc) (bool, error) {
+func (cgm *Cgm) ReadPage(context RecordContext, recordFn RecordFunc) bool {
 	buf := bytes.Buffer{}
 	buf.WriteByte(byte(context.RecordType))
 	buf.Write(MarshalInt32(int32(context.PageNumber)))
 	buf.WriteByte(1)
-	v, err := Cmd(READ_DATABASE_PAGES, buf.Bytes()...)
-	if err != nil {
-		return false, err
+	v := cgm.Cmd(READ_DATABASE_PAGES, buf.Bytes()...)
+	if cgm.Error() != nil {
+		return false
 	}
-
 	const headerSize = 28
 	if len(v) < headerSize {
-		return false, fmt.Errorf("invalid page length (%d)", len(v))
+		cgm.SetError(fmt.Errorf("invalid page length (%d)", len(v)))
+		return false
 	}
 	crc := UnmarshalUint16(v[headerSize-2 : headerSize])
 	calc := crc16(v[:headerSize-2])
 	if crc != calc {
-		return false, CrcError{
+		cgm.SetError(CrcError{
 			Kind:     "page",
 			Received: crc,
 			Computed: calc,
 			Context:  &context,
 			Data:     v,
-		}
+		})
+		return false
 	}
-
 	firstIndex := int(UnmarshalInt32(v[0:4]))
 	numRecords := int(UnmarshalInt32(v[4:8]))
 
 	r := RecordType(v[8])
 	if r != context.RecordType {
-		return false, fmt.Errorf("unexpected record type %d in context %+v", r, context)
+		cgm.SetError(fmt.Errorf("unexpected record type %d in context %+v", r, context))
+		return false
 	}
 
 	// rev := v[9]
 
 	p := int(UnmarshalInt32(v[10:14]))
 	if p != context.PageNumber {
-		return false, fmt.Errorf("unexpected page number %d in context %+v", p, context)
+		cgm.SetError(fmt.Errorf("unexpected page number %d in context %+v", p, context))
+		return false
 	}
 
 	// r1 := UnmarshalInt32(v[14:18])
@@ -150,40 +151,41 @@ func ReadPage(context RecordContext, recordFn RecordFunc) (bool, error) {
 		rec = rec[:recordLen-2]
 		calc := crc16(rec)
 		if crc != calc {
-			return false, CrcError{
+			cgm.SetError(CrcError{
 				Kind:     "record",
 				Received: crc,
 				Computed: calc,
 				Context:  &context,
 				Data:     rec,
-			}
+			})
+			return false
 		}
 		keepGoing, err := recordFn(rec, context)
 		if err != nil || !keepGoing {
-			return keepGoing, err
+			cgm.SetError(err)
+			return false
 		}
 	}
-	return true, nil
+	return true
 }
 
-func ReadRecords(recordType RecordType, recordFn RecordFunc) error {
-	context, err := ReadPageRange(recordType)
-	if err != nil {
-		return err
+func (cgm *Cgm) ReadRecords(recordType RecordType, recordFn RecordFunc) {
+	context := cgm.ReadPageRange(recordType)
+	if cgm.Error() != nil {
+		return
 	}
-	return IterRecords(context, recordFn)
+	cgm.IterRecords(context, recordFn)
 }
 
 // IterRecords reads the pages of the type and range specified by the
 // given RecordContext and applies recordFn to each record in each page.
 // Pages are visited in reverse order to facilitate scanning for recent records.
-func IterRecords(context RecordContext, recordFn RecordFunc) error {
+func (cgm *Cgm) IterRecords(context RecordContext, recordFn RecordFunc) {
 	for n := context.EndPage; n >= context.StartPage; n-- {
 		context.PageNumber = n
-		keepGoing, err := ReadPage(context, recordFn)
-		if err != nil || !keepGoing {
-			return err
+		keepGoing := cgm.ReadPage(context, recordFn)
+		if cgm.Error() != nil || !keepGoing {
+			return
 		}
 	}
-	return nil
 }

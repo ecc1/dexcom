@@ -5,10 +5,10 @@ import (
 	"time"
 )
 
-func ReadEgvRecords(since time.Time) ([]EgvRecord, error) {
-	context, err := ReadPageRange(EGV_DATA)
-	if err != nil {
-		return nil, err
+func (cgm *Cgm) ReadEgvRecords(since time.Time) []EgvRecord {
+	context := cgm.ReadPageRange(EGV_DATA)
+	if cgm.Error() != nil {
+		return nil
 	}
 	results := []EgvRecord{}
 	proc := func(v []byte, context RecordContext) (bool, error) {
@@ -25,14 +25,14 @@ func ReadEgvRecords(since time.Time) ([]EgvRecord, error) {
 		results = append(results, r)
 		return true, nil
 	}
-	err = IterRecords(context, proc)
-	return results, err
+	cgm.IterRecords(context, proc)
+	return results
 }
 
-func ReadSensorRecords(since time.Time) ([]SensorRecord, error) {
-	context, err := ReadPageRange(SENSOR_DATA)
-	if err != nil {
-		return nil, err
+func (cgm *Cgm) ReadSensorRecords(since time.Time) []SensorRecord {
+	context := cgm.ReadPageRange(SENSOR_DATA)
+	if cgm.Error() != nil {
+		return nil
 	}
 	results := []SensorRecord{}
 	proc := func(v []byte, context RecordContext) (bool, error) {
@@ -49,14 +49,14 @@ func ReadSensorRecords(since time.Time) ([]SensorRecord, error) {
 		results = append(results, r)
 		return true, nil
 	}
-	err = IterRecords(context, proc)
-	return results, err
+	cgm.IterRecords(context, proc)
+	return results
 }
 
-func ReadCalibrationRecords(since time.Time) ([]CalibrationRecord, error) {
-	context, err := ReadPageRange(CAL_SET)
-	if err != nil {
-		return nil, err
+func (cgm *Cgm) ReadCalibrationRecords(since time.Time) []CalibrationRecord {
+	context := cgm.ReadPageRange(CAL_SET)
+	if cgm.Error() != nil {
+		return nil
 	}
 	results := []CalibrationRecord{}
 	proc := func(v []byte, context RecordContext) (bool, error) {
@@ -73,8 +73,8 @@ func ReadCalibrationRecords(since time.Time) ([]CalibrationRecord, error) {
 		results = append(results, r)
 		return true, nil
 	}
-	err = IterRecords(context, proc)
-	return results, err
+	cgm.IterRecords(context, proc)
+	return results
 }
 
 type GlucoseReading struct {
@@ -92,15 +92,15 @@ func withinWindow(t1, t2 time.Time, window time.Duration) bool {
 	return (0 <= d && d < window) || (0 <= -d && -d < window)
 }
 
-func GlucoseReadings(since time.Time) ([]GlucoseReading, error) {
-	egv, err := ReadEgvRecords(since)
-	if err != nil {
-		return nil, err
+func (cgm *Cgm) GlucoseReadings(since time.Time) []GlucoseReading {
+	egv := cgm.ReadEgvRecords(since)
+	if cgm.Error() != nil {
+		return nil
 	}
 	numEgv := len(egv)
-	sensor, err := ReadSensorRecords(since)
-	if err != nil {
-		return nil, err
+	sensor := cgm.ReadSensorRecords(since)
+	if cgm.Error() != nil {
+		return nil
 	}
 	numSensor := len(sensor)
 	readings := []GlucoseReading{}
@@ -132,5 +132,5 @@ func GlucoseReadings(since time.Time) ([]GlucoseReading, error) {
 		}
 		readings = append(readings, r)
 	}
-	return readings, nil
+	return readings
 }
