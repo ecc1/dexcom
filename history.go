@@ -24,6 +24,20 @@ func (cgm *Cgm) ReadHistory(pageType PageType, since time.Time) []Record {
 	return results
 }
 
+func (cgm *Cgm) ReadCount(pageType PageType, count int) []Record {
+	first, last := cgm.ReadPageRange(pageType)
+	if cgm.Error() != nil {
+		return nil
+	}
+	results := []Record{}
+	proc := func(r Record) (bool, error) {
+		results = append(results, r)
+		return len(results) == count, nil
+	}
+	cgm.IterRecords(pageType, first, last, proc)
+	return results
+}
+
 const (
 	// Time window within which EGV and sensor readings will be merged.
 	glucoseReadingWindow = 2 * time.Second
