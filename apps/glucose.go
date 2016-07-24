@@ -37,10 +37,13 @@ func main() {
 	}
 }
 
-func printReading(r dexcom.GlucoseReading) {
-	t := r.Sensor.Timestamp.DisplayTime
-	if t.IsZero() {
-		t = r.Egv.Timestamp.DisplayTime
+func printReading(r dexcom.Record) {
+	t := r.Timestamp.DisplayTime
+	if r.Egv != nil && r.Sensor != nil {
+		fmt.Printf("%s  %3d  %6d  %6d\n", t.Format(timeLayout), r.Egv.Glucose, r.Sensor.Unfiltered, r.Sensor.Filtered)
+	} else if r.Egv != nil {
+		fmt.Printf("%s  %3d\n", t.Format(timeLayout), r.Egv.Glucose)
+	} else if r.Sensor != nil {
+		fmt.Printf("%s       %6d  %6d\n", t.Format(timeLayout), r.Sensor.Unfiltered, r.Sensor.Filtered)
 	}
-	fmt.Printf("%s  %3d  %6d  %6d\n", t.Format(timeLayout), r.Egv.Glucose, r.Sensor.Unfiltered, r.Sensor.Filtered)
 }

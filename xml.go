@@ -6,13 +6,13 @@ import (
 	"fmt"
 )
 
-// XMLData maps attribute names to values.
+// XmlInfo maps attribute names to values.
 // The Dexcom CGM receiver represents its system data as single XML nodes
 // with multiple attributes, so a tree structure is not required.
-type XMLData map[string]string
+type XmlInfo map[string]string
 
 // UnmarshalXML is called by xml.Unmarshal.
-func (ptr *XMLData) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+func (ptr *XmlInfo) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	m := *ptr
 	for _, attr := range start.Attr {
 		m[attr.Name.Local] = attr.Value
@@ -20,50 +20,47 @@ func (ptr *XMLData) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	return d.Skip()
 }
 
-func (r *XMLData) Unmarshal(v []byte) error {
-	*r = make(map[string]string)
-	return xml.Unmarshal(v, r)
+func unmarshalXmlBytes(v []byte) *XmlInfo {
+	m := make(XmlInfo)
+	err := xml.Unmarshal(v, &m)
+	if err != nil {
+		m["InvalidXML"] = string(v)
+	}
+	return &m
+}
+
+func unmarshalXmlInfo(r *Record, v []byte) {
+	v = v[8:]
+	i := bytes.IndexByte(v, 0x00)
+	if i != -1 {
+		v = v[:i]
+	}
+	r.Xml = unmarshalXmlBytes(v)
 }
 
 // ReadFirmwareHeader gets the firmware header from the Dexcom CGM receiver
-// and returns it as XMLData.
-func (cgm *Cgm) ReadFirmwareHeader() XMLData {
-	x := XMLData{}
-	p := cgm.Cmd(READ_FIRMWARE_HEADER)
+// and returns it as XmlInfo.
+func (cgm *Cgm) ReadFirmwareHeader() *XmlInfo {
+	v := cgm.Cmd(READ_FIRMWARE_HEADER)
 	if cgm.Error() != nil {
-		return x
+		return nil
 	}
-	err := x.Unmarshal(p)
-	cgm.SetError(err)
-	return x
-}
-
-// An XMLRecord contains timestamped XML data.
-type XMLRecord struct {
-	Timestamp Timestamp
-	XML       XMLData
-}
-
-func (r *XMLRecord) Unmarshal(v []byte) error {
-	p := v[8:]
-	i := bytes.IndexByte(p, 0x00)
-	if i != -1 {
-		p = p[:i]
-	}
-	r.Timestamp.Unmarshal(v[0:8])
-	return r.XML.Unmarshal(p)
+	return unmarshalXmlBytes(v)
 }
 
 // ReadXMLRecord gets the given XML record type from the Dexcom CGM receiver.
-func (cgm *Cgm) ReadXMLRecord(recordType RecordType) XMLRecord {
-	x := XMLRecord{}
-	proc := func(v []byte, context RecordContext) (bool, error) {
+func (cgm *Cgm) ReadXMLRecord(pageType PageType) Record {
+	x := Record{}
+	seen := false
+	proc := func(r Record) (bool, error) {
 		// There should only be a single page, containing one record.
-		if context.Index != 0 || context.PageNumber != context.StartPage || context.StartPage != context.EndPage {
-			return true, fmt.Errorf("unexpected record context %+v", context)
+		if seen {
+			return true, fmt.Errorf("unexpected XML record in %v page", pageType)
 		}
-		return false, x.Unmarshal(v)
+		x = r
+		seen = true
+		return false, nil
 	}
-	cgm.ReadRecords(recordType, proc)
+	cgm.ReadRecords(pageType, proc)
 	return x
 }

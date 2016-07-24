@@ -27,10 +27,6 @@ type Timestamp struct {
 	DisplayTime time.Time
 }
 
-func (r *Timestamp) Type() RecordType {
-	return timestampType
-}
-
 func (r *Timestamp) Unmarshal(v []byte) error {
 	r.SystemTime = UnmarshalTime(v[0:4])
 	r.DisplayTime = UnmarshalTime(v[4:8])

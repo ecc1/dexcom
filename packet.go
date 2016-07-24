@@ -65,7 +65,7 @@ func (cgm *Cgm) receivePacket() []byte {
 			Kind:     "packet",
 			Received: crc,
 			Computed: calc,
-			Context:  nil,
+			PageType: INVALID_PAGE,
 			Data:     body,
 		})
 	}

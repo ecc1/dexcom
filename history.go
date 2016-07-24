@@ -5,18 +5,13 @@ import (
 	"time"
 )
 
-func (cgm *Cgm) ReadEgvRecords(since time.Time) []EgvRecord {
-	context := cgm.ReadPageRange(EGV_DATA)
+func (cgm *Cgm) ReadHistory(pageType PageType, since time.Time) []Record {
+	first, last := cgm.ReadPageRange(pageType)
 	if cgm.Error() != nil {
 		return nil
 	}
-	results := []EgvRecord{}
-	proc := func(v []byte, context RecordContext) (bool, error) {
-		r := EgvRecord{}
-		err := r.Unmarshal(v)
-		if err != nil {
-			return true, err
-		}
+	results := []Record{}
+	proc := func(r Record) (bool, error) {
 		t := r.Timestamp.DisplayTime
 		if t.Before(since) {
 			log.Printf("stopping at timestamp %s", t.Format(time.RFC3339))
@@ -25,61 +20,8 @@ func (cgm *Cgm) ReadEgvRecords(since time.Time) []EgvRecord {
 		results = append(results, r)
 		return false, nil
 	}
-	cgm.IterRecords(context, proc)
+	cgm.IterRecords(pageType, first, last, proc)
 	return results
-}
-
-func (cgm *Cgm) ReadSensorRecords(since time.Time) []SensorRecord {
-	context := cgm.ReadPageRange(SENSOR_DATA)
-	if cgm.Error() != nil {
-		return nil
-	}
-	results := []SensorRecord{}
-	proc := func(v []byte, context RecordContext) (bool, error) {
-		r := SensorRecord{}
-		err := r.Unmarshal(v)
-		if err != nil {
-			return true, err
-		}
-		t := r.Timestamp.DisplayTime
-		if t.Before(since) {
-			log.Printf("stopping at timestamp %s", t.Format(time.RFC3339))
-			return true, nil
-		}
-		results = append(results, r)
-		return false, nil
-	}
-	cgm.IterRecords(context, proc)
-	return results
-}
-
-func (cgm *Cgm) ReadCalibrationRecords(since time.Time) []CalibrationRecord {
-	context := cgm.ReadPageRange(CAL_SET)
-	if cgm.Error() != nil {
-		return nil
-	}
-	results := []CalibrationRecord{}
-	proc := func(v []byte, context RecordContext) (bool, error) {
-		r := CalibrationRecord{}
-		err := r.Unmarshal(v)
-		if err != nil {
-			return true, err
-		}
-		t := r.Timestamp.DisplayTime
-		if t.Before(since) {
-			log.Printf("stopping at timestamp %s", t.Format(time.RFC3339))
-			return true, nil
-		}
-		results = append(results, r)
-		return false, nil
-	}
-	cgm.IterRecords(context, proc)
-	return results
-}
-
-type GlucoseReading struct {
-	Egv    EgvRecord
-	Sensor SensorRecord
 }
 
 const (
@@ -87,45 +29,49 @@ const (
 	glucoseReadingWindow = 2 * time.Second
 )
 
-func withinWindow(t1, t2 time.Time, window time.Duration) bool {
-	d := t1.Sub(t2)
-	return (0 <= d && d < window) || (0 <= -d && -d < window)
-}
-
-func (cgm *Cgm) GlucoseReadings(since time.Time) []GlucoseReading {
-	egv := cgm.ReadEgvRecords(since)
-	if cgm.Error() != nil {
-		return nil
-	}
-	numEgv := len(egv)
-	sensor := cgm.ReadSensorRecords(since)
+func (cgm *Cgm) GlucoseReadings(since time.Time) []Record {
+	sensor := cgm.ReadHistory(SENSOR_DATA, since)
 	if cgm.Error() != nil {
 		return nil
 	}
 	numSensor := len(sensor)
-	readings := []GlucoseReading{}
+	egv := cgm.ReadHistory(EGV_DATA, since)
+	if cgm.Error() != nil {
+		return nil
+	}
+	numEgv := len(egv)
+	readings := []Record{}
 	i, j := 0, 0
 	for {
-		r := GlucoseReading{}
-		if i < numEgv && j < numSensor {
-			egvTime := egv[i].Timestamp.DisplayTime
-			sensorTime := sensor[j].Timestamp.DisplayTime
-			if withinWindow(egvTime, sensorTime, glucoseReadingWindow) {
-				r = GlucoseReading{Egv: egv[i], Sensor: sensor[j]}
+		r := Record{}
+		if i < numSensor && j < numEgv {
+			sensorTime := sensor[i].Timestamp.DisplayTime
+			egvTime := egv[j].Timestamp.DisplayTime
+			delta := egvTime.Sub(sensorTime)
+			if 0 <= delta && delta < glucoseReadingWindow {
+				// Merge using sensor[i]'s slightly earlier time.
+				r = sensor[i]
+				r.Egv = egv[j].Egv
 				i++
 				j++
-			} else if egvTime.After(sensorTime) {
-				r = GlucoseReading{Egv: egv[i]}
+			} else if 0 <= -delta && -delta < glucoseReadingWindow {
+				// Merge using egv[j]'s slightly earlier time.
+				r = egv[j]
+				r.Sensor = sensor[i].Sensor
+				i++
+				j++
+			} else if sensorTime.After(egvTime) {
+				r = sensor[i]
 				i++
 			} else {
-				r = GlucoseReading{Sensor: sensor[j]}
+				r = egv[j]
 				j++
 			}
-		} else if i < numEgv {
-			r = GlucoseReading{Egv: egv[i]}
+		} else if i < numSensor {
+			r = sensor[i]
 			i++
-		} else if j < numSensor {
-			r = GlucoseReading{Sensor: sensor[j]}
+		} else if j < numEgv {
+			r = egv[j]
 			j++
 		} else {
 			break
