@@ -11,8 +11,9 @@ import (
 )
 
 type bleConn struct {
-	tx ble.Characteristic
-	rx chan byte
+	conn *ble.Connection
+	tx   ble.Characteristic
+	rx   chan byte
 }
 
 const (
@@ -54,8 +55,8 @@ var (
 	receiverService = dexcomUUID(0xa0b1)
 )
 
-func connect() error {
-	device, err := ble.Discover(time.Minute, receiverService)
+func connect(conn *ble.Connection) error {
+	device, err := conn.Discover(time.Minute, receiverService)
 	if err != nil {
 		return err
 	}
@@ -77,7 +78,7 @@ func connect() error {
 	} else {
 		log.Printf("%s: already paired", device.Name())
 	}
-	err = ble.Update()
+	err = conn.Update()
 	if err != nil {
 		return err
 	}
@@ -110,7 +111,7 @@ func authenticate(device ble.Device) error {
 	if err != nil {
 		return err
 	}
-	auth, err := ble.GetCharacteristic(authentication)
+	auth, err := device.Conn().GetCharacteristic(authentication)
 	if err != nil {
 		return err
 	}
@@ -137,38 +138,49 @@ var (
 )
 
 func OpenBLE() (Connection, error) {
-	err := connect()
+	conn, err := ble.Open()
 	if err != nil {
+		return nil, err
+	}
+
+	err = connect(conn)
+	if err != nil {
+		conn.Close()
 		return nil, err
 	}
 
 	// We need to enable heartbeat notifications
 	// or else we won't get any receiveData responses.
-	err = ble.HandleNotify(heartbeat, func(data []byte) {})
+	err = conn.HandleNotify(heartbeat, func(data []byte) {})
 	if err != nil {
+		conn.Close()
 		return nil, err
 	}
 
 	rx := make(chan byte, 1600)
-	err = ble.HandleNotify(receiveData, func(data []byte) {
+	err = conn.HandleNotify(receiveData, func(data []byte) {
 		for _, b := range data {
 			rx <- b
 		}
 	})
 	if err != nil {
+		conn.Close()
 		return nil, err
 	}
 
-	tx, err := ble.GetCharacteristic(sendData)
+	tx, err := conn.GetCharacteristic(sendData)
 	if err != nil {
+		conn.Close()
 		return nil, err
 	}
 
-	return &bleConn{tx: tx, rx: rx}, nil
+	return &bleConn{conn: conn, tx: tx, rx: rx}, nil
 }
 
 func dexcomUUID(id uint16) string {
 	return fmt.Sprintf("f0ac%04x-ebfa-f96f-28da-076c35a521db", id)
 }
 
-func (*bleConn) Close() {}
+func (conn *bleConn) Close() {
+	conn.conn.Close()
+}
