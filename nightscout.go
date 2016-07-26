@@ -12,6 +12,7 @@ func (r Record) NightscoutEntry() nightscout.Entry {
 		Date:       t.UnixNano() / 1000000,
 		DateString: t.Format(nightscout.DateStringLayout),
 		Device:     "agape://ecc",
+		Noise:      1,
 	}
 	if r.Calibration != nil {
 		e.Type = "cal"
