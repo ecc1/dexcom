@@ -38,6 +38,40 @@ func (cgm *Cgm) ReadCount(pageType PageType, count int) []Record {
 	return results
 }
 
+// Merge slices of records that are already in reverse chronological order
+// into a single ordered slice.
+func MergeHistory(slices ...[]Record) []Record {
+	n := len(slices)
+	if n == 0 {
+		return nil
+	}
+	length := make([]int, n)
+	total := 0
+	for i, v := range slices {
+		length[i] = len(v)
+		total += len(v)
+	}
+	results := make([]Record, total)
+	index := make([]int, n)
+	for next, _ := range results {
+		// Find slice with latest current value.
+		which := -1
+		max := time.Time{}
+		for i, v := range slices {
+			if index[i] < len(v) {
+				t := v[index[i]].Timestamp.DisplayTime
+				if t.After(max) {
+					which = i
+					max = t
+				}
+			}
+		}
+		results[next] = slices[which][index[which]]
+		index[which]++
+	}
+	return results
+}
+
 const (
 	// Time window within which EGV and sensor readings will be merged.
 	glucoseReadingWindow = 2 * time.Second
