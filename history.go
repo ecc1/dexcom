@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+const (
+	userTimeLayout = "2006-01-02 15:04:05"
+)
+
 func (cgm *Cgm) ReadHistory(pageType PageType, since time.Time) []Record {
 	first, last := cgm.ReadPageRange(pageType)
 	if cgm.Error() != nil {
@@ -14,7 +18,7 @@ func (cgm *Cgm) ReadHistory(pageType PageType, since time.Time) []Record {
 	proc := func(r Record) (bool, error) {
 		t := r.Time()
 		if t.Before(since) {
-			log.Printf("stopping at timestamp %s", t.Format(time.RFC3339))
+			log.Printf("stopping CGM history scan at %s", t.Format(userTimeLayout))
 			return true, nil
 		}
 		results = append(results, r)

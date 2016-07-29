@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	timeLayout = "2006/01/02 15:04:05"
+	userTimeLayout = "2006-01-02 15:04:05"
 )
 
 var (
@@ -26,7 +26,7 @@ func main() {
 		log.Printf("retrieving all glucose records")
 	} else {
 		cutoff = time.Now().Add(-time.Duration(*numMinutes) * time.Minute)
-		log.Printf("retrieving records since %s", cutoff.Format(time.RFC3339))
+		log.Printf("retrieving records since %s", cutoff.Format(userTimeLayout))
 	}
 	readings := cgm.GlucoseReadings(cutoff)
 	if cgm.Error() != nil {
@@ -40,10 +40,10 @@ func main() {
 func printReading(r dexcom.Record) {
 	t := r.Time()
 	if r.Egv != nil && r.Sensor != nil {
-		fmt.Printf("%s  %3d  %6d  %6d\n", t.Format(timeLayout), r.Egv.Glucose, r.Sensor.Unfiltered, r.Sensor.Filtered)
+		fmt.Printf("%s  %3d  %6d  %6d\n", t.Format(userTimeLayout), r.Egv.Glucose, r.Sensor.Unfiltered, r.Sensor.Filtered)
 	} else if r.Egv != nil {
-		fmt.Printf("%s  %3d\n", t.Format(timeLayout), r.Egv.Glucose)
+		fmt.Printf("%s  %3d\n", t.Format(userTimeLayout), r.Egv.Glucose)
 	} else if r.Sensor != nil {
-		fmt.Printf("%s       %6d  %6d\n", t.Format(timeLayout), r.Sensor.Unfiltered, r.Sensor.Filtered)
+		fmt.Printf("%s       %6d  %6d\n", t.Format(userTimeLayout), r.Sensor.Unfiltered, r.Sensor.Filtered)
 	}
 }
