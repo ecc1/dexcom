@@ -2,6 +2,7 @@ package dexcom
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/ecc1/nightscout"
 )
@@ -61,4 +62,37 @@ func nightscoutTrend(t Trend) string {
 	default:
 		return ""
 	}
+}
+
+const (
+	edgeMargin = 1 * time.Minute
+)
+
+func MissingNightscoutEntries(records []Record, gaps []nightscout.Interval) []nightscout.Entry {
+	missing := []nightscout.Entry{}
+	i := 0
+	for _, g := range gaps {
+		// Skip over records that lie outside the gap.
+		for i < len(records) {
+			t := records[i].Time()
+			if t.Before(g.Finish) {
+				break
+			}
+			i++
+		}
+		// Add records that fall within the gap
+		// (by a margin of at least edgeMargin to avoid duplicates).
+		for i < len(records) {
+			r := records[i]
+			t := r.Time()
+			if t.Before(g.Start) {
+				break
+			}
+			if t.Sub(g.Start) >= edgeMargin && g.Finish.Sub(t) >= edgeMargin {
+				missing = append(missing, r.NightscoutEntry())
+			}
+			i++
+		}
+	}
+	return missing
 }
