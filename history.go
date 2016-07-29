@@ -12,7 +12,7 @@ func (cgm *Cgm) ReadHistory(pageType PageType, since time.Time) []Record {
 	}
 	results := []Record{}
 	proc := func(r Record) (bool, error) {
-		t := r.Timestamp.DisplayTime
+		t := r.Time()
 		if t.Before(since) {
 			log.Printf("stopping at timestamp %s", t.Format(time.RFC3339))
 			return true, nil
@@ -59,7 +59,7 @@ func MergeHistory(slices ...[]Record) []Record {
 		max := time.Time{}
 		for i, v := range slices {
 			if index[i] < len(v) {
-				t := v[index[i]].Timestamp.DisplayTime
+				t := v[index[i]].Time()
 				if t.After(max) {
 					which = i
 					max = t
@@ -93,8 +93,8 @@ func (cgm *Cgm) GlucoseReadings(since time.Time) []Record {
 	for {
 		r := Record{}
 		if i < numSensor && j < numEgv {
-			sensorTime := sensor[i].Timestamp.DisplayTime
-			egvTime := egv[j].Timestamp.DisplayTime
+			sensorTime := sensor[i].Time()
+			egvTime := egv[j].Time()
 			delta := egvTime.Sub(sensorTime)
 			if 0 <= delta && delta < glucoseReadingWindow {
 				// Merge using sensor[i]'s slightly earlier time.

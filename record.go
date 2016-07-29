@@ -48,6 +48,10 @@ type (
 	}
 )
 
+func (r *Record) Time() time.Time {
+	return r.Timestamp.DisplayTime
+}
+
 var recordUnmarshal = map[PageType]struct {
 	length    int
 	unmarshal func(*Record, []byte)

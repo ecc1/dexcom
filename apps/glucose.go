@@ -38,7 +38,7 @@ func main() {
 }
 
 func printReading(r dexcom.Record) {
-	t := r.Timestamp.DisplayTime
+	t := r.Time()
 	if r.Egv != nil && r.Sensor != nil {
 		fmt.Printf("%s  %3d  %6d  %6d\n", t.Format(timeLayout), r.Egv.Glucose, r.Sensor.Unfiltered, r.Sensor.Filtered)
 	} else if r.Egv != nil {

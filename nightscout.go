@@ -7,7 +7,7 @@ import (
 )
 
 func (r Record) NightscoutEntry() nightscout.Entry {
-	t := r.Timestamp.DisplayTime
+	t := r.Time()
 	e := nightscout.Entry{
 		Date:       t.UnixNano() / 1000000,
 		DateString: t.Format(nightscout.DateStringLayout),
