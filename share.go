@@ -56,9 +56,28 @@ var (
 )
 
 func connect(conn *ble.Connection) error {
-	device, err := conn.Discover(time.Minute, receiverService)
-	if err != nil {
-		return err
+	device, err := conn.GetDevice(receiverService)
+	if err == nil && !device.Connected() {
+		// Remove device to avoid "Software caused connection abort" error.
+		adapter, err := conn.GetAdapter()
+		if err != nil {
+			return err
+		}
+		err = adapter.RemoveDevice(device)
+		if err != nil {
+			return err
+		}
+		err = conn.Update()
+		if err != nil {
+			return err
+		}
+		device = nil
+	}
+	if err != nil || device == nil {
+		device, err = conn.Discover(time.Minute, receiverService)
+		if err != nil {
+			return err
+		}
 	}
 	if !device.Connected() {
 		err = device.Connect()
@@ -142,13 +161,11 @@ func OpenBLE() (Connection, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	err = connect(conn)
 	if err != nil {
 		conn.Close()
 		return nil, err
 	}
-
 	// We need to enable heartbeat notifications
 	// or else we won't get any receiveData responses.
 	err = conn.HandleNotify(heartbeat, func(data []byte) {})
@@ -156,7 +173,6 @@ func OpenBLE() (Connection, error) {
 		conn.Close()
 		return nil, err
 	}
-
 	rx := make(chan byte, 1600)
 	err = conn.HandleNotify(receiveData, func(data []byte) {
 		for _, b := range data {
@@ -167,13 +183,11 @@ func OpenBLE() (Connection, error) {
 		conn.Close()
 		return nil, err
 	}
-
 	tx, err := conn.GetCharacteristic(sendData)
 	if err != nil {
 		conn.Close()
 		return nil, err
 	}
-
 	return &bleConn{conn: conn, tx: tx, rx: rx}, nil
 }
 
