@@ -12,7 +12,7 @@ func (r Record) NightscoutEntry() nightscout.Entry {
 	e := nightscout.Entry{
 		Date:       t.UnixNano() / 1000000,
 		DateString: t.Format(nightscout.DateStringLayout),
-		Device:     "agape://ecc",
+		Device:     nightscout.Hostname(),
 		Noise:      1,
 	}
 	if r.Calibration != nil {
