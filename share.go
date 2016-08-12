@@ -41,12 +41,14 @@ func (conn *bleConn) Send(data []byte) error {
 }
 
 func (conn *bleConn) Receive(data []byte) error {
+	const receiveTimeout = 5 * time.Second
 	for i := 0; i < len(data); i++ {
-		b, ok := <-conn.rx
-		if !ok {
-			return fmt.Errorf("input channel closed")
+		select {
+		case b := <-conn.rx:
+			data[i] = b
+		case <-time.After(receiveTimeout):
+			return fmt.Errorf("BLE receive timeout")
 		}
-		data[i] = b
 	}
 	return nil
 }
