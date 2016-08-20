@@ -27,6 +27,31 @@ func TestMarshalUint16(t *testing.T) {
 	}
 }
 
+func TestMarshalInt16(t *testing.T) {
+	cases := []struct {
+		val int16
+		rep []byte
+	}{
+		{0x1234, []byte{0x34, 0x12}},
+		{0, []byte{0, 0}},
+		{256, []byte{0, 1}},
+		{-1, []byte{0xFF, 0xFF}},
+		{-256, []byte{0x00, 0xFF}},
+		{math.MaxInt16, []byte{0xFF, 0x7F}},
+		{math.MinInt16, []byte{0x00, 0x80}},
+	}
+	for _, c := range cases {
+		rep := MarshalInt16(c.val)
+		if !bytes.Equal(rep, c.rep) {
+			t.Errorf("MarshalInt16(%d) == % X, want % X", c.val, rep, c.rep)
+		}
+		val := UnmarshalInt16(c.rep)
+		if val != c.val {
+			t.Errorf("UnmarshalInt16(% X) == %d, want %d", c.rep, val, c.val)
+		}
+	}
+}
+
 func TestMarshalUint32(t *testing.T) {
 	cases := []struct {
 		val uint32
@@ -64,11 +89,28 @@ func TestMarshalInt32(t *testing.T) {
 	for _, c := range cases {
 		rep := MarshalInt32(c.val)
 		if !bytes.Equal(rep, c.rep) {
-			t.Errorf("MarshalInt32(%08X) == % X, want % X", c.val, rep, c.rep)
+			t.Errorf("MarshalInt32(%d) == % X, want % X", c.val, rep, c.rep)
 		}
 		val := UnmarshalInt32(c.rep)
 		if val != c.val {
-			t.Errorf("UnmarshalInt32(% X) == %08X, want %08X", c.rep, val, c.val)
+			t.Errorf("UnmarshalInt32(% X) == %d, want %d", c.rep, val, c.val)
+		}
+	}
+}
+
+func TestMarshalUint64(t *testing.T) {
+	cases := []struct {
+		val uint64
+		rep []byte
+	}{
+		{0x0123456789ABCDEF, []byte{0xEF, 0xCD, 0xAB, 0x89, 0x67, 0x45, 0x23, 0x01}},
+		{0, []byte{0, 0, 0, 0, 0, 0, 0, 0}},
+		{math.MaxUint64, []byte{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}},
+	}
+	for _, c := range cases {
+		val := UnmarshalUint64(c.rep)
+		if val != c.val {
+			t.Errorf("UnmarshalUint64(% X) == %016X, want %016X", c.rep, val, c.val)
 		}
 	}
 }
