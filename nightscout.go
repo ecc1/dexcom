@@ -13,7 +13,6 @@ func (r Record) NightscoutEntry() nightscout.Entry {
 		Date:       t.UnixNano() / 1000000,
 		DateString: t.Format(nightscout.DateStringLayout),
 		Device:     nightscout.Hostname(),
-		Noise:      1,
 	}
 	if r.Calibration != nil {
 		e.Type = "cal"
@@ -24,19 +23,20 @@ func (r Record) NightscoutEntry() nightscout.Entry {
 	}
 	if r.Meter != nil {
 		e.Type = "mbg"
-		e.Mbg = r.Meter.Glucose
+		e.Mbg = int(r.Meter.Glucose)
 		return e
 	}
 	if r.Sensor != nil || r.Egv != nil {
 		e.Type = "sgv"
 		if r.Sensor != nil {
-			e.Unfiltered = r.Sensor.Unfiltered
-			e.Filtered = r.Sensor.Filtered
-			e.Rssi = r.Sensor.Rssi
+			e.Unfiltered = int(r.Sensor.Unfiltered)
+			e.Filtered = int(r.Sensor.Filtered)
+			e.Rssi = int(r.Sensor.Rssi)
 		}
 		if r.Egv != nil {
-			e.Sgv = r.Egv.Glucose
+			e.Sgv = int(r.Egv.Glucose)
 			e.Direction = nightscoutTrend(r.Egv.Trend)
+			e.Noise = int(r.Egv.Noise)
 		}
 		return e
 	}

@@ -38,12 +38,16 @@ func main() {
 }
 
 func printReading(r dexcom.Record) {
-	t := r.Time()
-	if r.Egv != nil && r.Sensor != nil {
-		fmt.Printf("%s  %3d  %6d  %6d\n", t.Format(userTimeLayout), r.Egv.Glucose, r.Sensor.Unfiltered, r.Sensor.Filtered)
-	} else if r.Egv != nil {
-		fmt.Printf("%s  %3d\n", t.Format(userTimeLayout), r.Egv.Glucose)
-	} else if r.Sensor != nil {
-		fmt.Printf("%s       %6d  %6d\n", t.Format(userTimeLayout), r.Sensor.Unfiltered, r.Sensor.Filtered)
+	t := r.Time().Format(userTimeLayout)
+	glucose, noise, unfiltered, filtered, rssi := "", "", "", "", ""
+	if r.Egv != nil {
+		glucose = fmt.Sprintf("%d", r.Egv.Glucose)
+		noise = fmt.Sprintf("%d", r.Egv.Noise)
 	}
+	if r.Sensor != nil {
+		unfiltered = fmt.Sprintf("%6d", r.Sensor.Unfiltered)
+		filtered = fmt.Sprintf("%6d", r.Sensor.Filtered)
+		rssi = fmt.Sprintf("%3d", r.Sensor.Rssi)
+	}
+	fmt.Printf("%s  %3s  %3s  %6s  %6s  %3s\n", t, glucose, noise, unfiltered, filtered, rssi)
 }

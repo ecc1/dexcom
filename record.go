@@ -18,12 +18,14 @@ type (
 	SensorInfo struct {
 		Unfiltered uint32
 		Filtered   uint32
-		Rssi       uint16
+		Rssi       int8
+		Unknown    byte
 	}
 
 	EgvInfo struct {
 		Glucose     uint16
 		DisplayOnly bool
+		Noise       uint8
 		Trend       Trend
 	}
 
@@ -82,7 +84,8 @@ func unmarshalSensorInfo(r *Record, v []byte) {
 	r.Sensor = &SensorInfo{
 		Unfiltered: UnmarshalUint32(v[8:12]),
 		Filtered:   UnmarshalUint32(v[12:16]),
-		Rssi:       UnmarshalUint16(v[16:18]),
+		Rssi:       int8(v[16]),
+		Unknown:    v[17],
 	}
 }
 
@@ -144,8 +147,9 @@ func (t Trend) Symbol() string {
 
 const (
 	EGV_DISPLAY_ONLY     = 1 << 15
-	EGV_VALUE_MASK       = 1<<10 - 1
-	EGV_TREND_ARROW_MASK = 1<<4 - 1
+	EGV_VALUE_MASK       = 0x3FF
+	EGV_NOISE_MASK       = 0x70
+	EGV_TREND_ARROW_MASK = 0xF
 )
 
 func unmarshalEgvInfo(r *Record, v []byte) {
@@ -153,6 +157,7 @@ func unmarshalEgvInfo(r *Record, v []byte) {
 	r.Egv = &EgvInfo{
 		Glucose:     g & EGV_VALUE_MASK,
 		DisplayOnly: g&EGV_DISPLAY_ONLY != 0,
+		Noise:       (v[10] & EGV_NOISE_MASK) >> 4,
 		Trend:       Trend(v[10] & EGV_TREND_ARROW_MASK),
 	}
 }
