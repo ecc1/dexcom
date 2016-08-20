@@ -8,6 +8,8 @@ package dexcom
 
 import (
 	"log"
+
+	"github.com/ecc1/usbserial"
 )
 
 type Connection interface {
@@ -29,7 +31,10 @@ func Open() *Cgm {
 	if cgm.err == nil {
 		return cgm
 	}
-	log.Println("USB:", cgm.err)
+	_, ok := cgm.err.(usbserial.DeviceNotFoundError)
+	if !ok {
+		log.Print(cgm.err)
+	}
 	cgm.conn, cgm.err = OpenBLE()
 	return cgm
 }
