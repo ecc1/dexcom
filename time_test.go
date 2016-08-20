@@ -7,23 +7,29 @@ import (
 
 func TestTime(t *testing.T) {
 	cases := []struct {
-		b []byte
+		n int64
 		t time.Time
 	}{
-		{[]byte{0x00, 0x00, 0x00, 0x00}, parseTime("2009-01-01T00:00:00")},
-		{[]byte{0x01, 0x02, 0x03, 0x04}, parseTime("2011-02-19T00:06:25")},
-		{[]byte{0x74, 0x90, 0x33, 0x0E}, parseTime("2016-07-20T15:25:40")},
+		{0x00000000, parseTime("2009-01-01 00:00:00")},
+		{0x01234567, parseTime("2009-08-09 22:25:43")},
+		{0x04030201, parseTime("2011-02-19 00:06:25")},
+		{0x0E339074, parseTime("2016-07-20 15:25:40")},
+		{0x0EDCBA98, parseTime("2016-11-25 22:58:32")},
 	}
 	for _, c := range cases {
-		tv := UnmarshalTime(c.b)
+		tv := toTime(c.n)
 		if !tv.Equal(c.t) {
-			t.Errorf("UnmarshalTime(% X) == %v, want %v", c.b, tv, c.t)
+			t.Errorf("toTime(%X) == %v, want %v", c.n, tv, c.t)
+		}
+		n := fromTime(c.t)
+		if n != c.n {
+			t.Errorf("fromTime(%v) == %X, want %X", c.t, n, c.n)
 		}
 	}
 }
 
 func parseTime(s string) time.Time {
-	const layout = "2006-01-02T15:04:05"
+	const layout = "2006-01-02 15:04:05"
 	t, err := time.ParseInLocation(layout, s, time.Local)
 	if err != nil {
 		panic(err)

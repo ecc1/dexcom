@@ -16,6 +16,14 @@ func toTime(t int64) time.Time {
 	return time.Date(year, month, day, hour, min, sec, 0, time.Local)
 }
 
+func fromTime(t time.Time) int64 {
+	// Construct the corresponding value in UTC.
+	year, month, day := t.Date()
+	hour, min, sec := t.Clock()
+	u := time.Date(year, month, day, hour, min, sec, 0, time.UTC)
+	return int64(u.Sub(dexcomEpoch) / time.Second)
+}
+
 // UnmarshalTime unmarshals a 4-byte array into a time value.
 func UnmarshalTime(v []byte) time.Time {
 	return toTime(int64(UnmarshalUint32(v)))
@@ -40,7 +48,6 @@ func displayTime(sys uint32, offset int32) time.Time {
 // SYSTEM_TIME = RTC + SYSTEM_TIME_OFFSET
 // DISPLAY_TIME = SYSTEM_TIME + DISPLAY_TIME_OFFSET
 
-// ReadDisplayTime gets the current display time value from the Dexcom CGM receiver.
 func (cgm *Cgm) ReadDisplayTime() time.Time {
 	v := cgm.Cmd(READ_DISPLAY_TIME_OFFSET)
 	if cgm.Error() != nil {
@@ -53,4 +60,14 @@ func (cgm *Cgm) ReadDisplayTime() time.Time {
 	}
 	sysTime := UnmarshalUint32(v)
 	return displayTime(sysTime, displayOffset)
+}
+
+func (cgm *Cgm) SetDisplayTime(t time.Time) {
+	v := cgm.Cmd(READ_SYSTEM_TIME)
+	if cgm.Error() != nil {
+		return
+	}
+	sysTime := UnmarshalUint32(v)
+	offset := int32(fromTime(t) - int64(sysTime))
+	cgm.Cmd(WRITE_DISPLAY_TIME_OFFSET, MarshalInt32(offset)...)
 }
