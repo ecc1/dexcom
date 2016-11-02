@@ -58,52 +58,35 @@ var (
 )
 
 func connect(conn *ble.Connection) error {
+	forceReauth := false
 	device, err := conn.GetDevice(receiverService)
-	if err == nil && !device.Connected() {
-		// Remove device to avoid "Software caused connection abort" error.
-		adapter, err := conn.GetAdapter()
-		if err != nil {
-			return err
-		}
-		err = adapter.RemoveDevice(device)
-		if err != nil {
-			return err
-		}
-		err = conn.Update()
-		if err != nil {
-			return err
-		}
-		device = nil
-	}
-	if err != nil || device == nil {
-		device, err = conn.Discover(time.Minute, receiverService)
+	if err != nil {
+		forceReauth = true
+		log.Printf("%v; attempting discovery", err)
+		device, err = conn.Discover(10*time.Second, receiverService)
 		if err != nil {
 			return err
 		}
 	}
 	if !device.Connected() {
+		forceReauth = true
 		err = device.Connect()
 		if err != nil {
 			return err
 		}
-		log.Printf("%s: connected", device.Name())
-	} else {
-		log.Printf("%s: already connected", device.Name())
 	}
 	if !device.Paired() {
+		forceReauth = true
 		err = device.Pair()
 		if err != nil {
 			return err
 		}
-		log.Printf("%s: paired", device.Name())
-	} else {
-		log.Printf("%s: already paired", device.Name())
 	}
 	err = conn.Update()
 	if err != nil {
 		return err
 	}
-	return authenticate(device)
+	return authenticate(device, forceReauth)
 }
 
 var (
@@ -127,7 +110,7 @@ func initAuthCode() error {
 	return nil
 }
 
-func authenticate(device ble.Device) error {
+func authenticate(device ble.Device, reauth bool) error {
 	err := initAuthCode()
 	if err != nil {
 		return err
@@ -136,13 +119,14 @@ func authenticate(device ble.Device) error {
 	if err != nil {
 		return err
 	}
-	data, err := auth.ReadValue()
-	if err != nil {
-		return err
-	}
-	if bytes.Equal(data, authCode) {
-		log.Printf("%s: already authenticated", device.Name())
-		return nil
+	if !reauth {
+		data, err := auth.ReadValue()
+		if err != nil {
+			return err
+		}
+		if bytes.Equal(data, authCode) {
+			return nil
+		}
 	}
 	err = auth.WriteValue(authCode)
 	if err != nil {
