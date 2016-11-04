@@ -22,6 +22,9 @@ func main() {
 	flag.Parse()
 	cutoff := time.Time{}
 	cgm := dexcom.Open()
+	if cgm.Error() != nil {
+		log.Fatal(cgm.Error())
+	}
 	if *all {
 		log.Printf("retrieving all glucose records")
 	} else {
