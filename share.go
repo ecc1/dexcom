@@ -54,15 +54,27 @@ func (conn *bleConn) Receive(data []byte) error {
 }
 
 var (
+	receiverName    = "DEXCOMRX"
 	receiverService = dexcomUUID(0xa0b1)
 )
 
 func connect(conn *ble.Connection) error {
 	forceReauth := false
 	device, err := conn.GetDevice(receiverService)
-	if err != nil {
+	if err != nil || !device.Connected() {
 		forceReauth = true
-		log.Printf("%v; attempting discovery", err)
+		// Remove device to avoid "Software caused connection abort" error.
+		device, err = conn.GetDeviceByName(receiverName)
+		if err == nil {
+			adapter, err := conn.GetAdapter()
+			if err != nil {
+				return err
+			}
+			err = adapter.RemoveDevice(device)
+			if err != nil {
+				return err
+			}
+		}
 		device, err = conn.Discover(10*time.Second, receiverService)
 		if err != nil {
 			return err
