@@ -49,6 +49,9 @@ func MergeHistory(slices ...[]Record) []Record {
 	if n == 0 {
 		return nil
 	}
+	if n == 1 {
+		return slices[0]
+	}
 	length := make([]int, n)
 	total := 0
 	for i, v := range slices {
