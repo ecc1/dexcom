@@ -1,6 +1,7 @@
 package dexcom
 
 import (
+	"bytes"
 	"fmt"
 	"time"
 )
@@ -11,6 +12,7 @@ type (
 		Sensor      *SensorInfo      `json:",omitempty"`
 		Egv         *EgvInfo         `json:",omitempty"`
 		Calibration *CalibrationInfo `json:",omitempty"`
+		Insertion   *InsertionInfo   `json:",omitempty"`
 		Meter       *MeterInfo       `json:",omitempty"`
 		Xml         *XmlInfo         `json:",omitempty"`
 	}
@@ -27,6 +29,11 @@ type (
 		DisplayOnly bool
 		Noise       uint8
 		Trend       Trend
+	}
+
+	InsertionInfo struct {
+		SystemTime time.Time
+		Event      SensorChange
 	}
 
 	MeterInfo struct {
@@ -64,6 +71,7 @@ var recordUnmarshal = map[PageType]struct {
 	SENSOR_DATA:             {18, unmarshalSensorInfo},
 	EGV_DATA:                {11, unmarshalEgvInfo},
 	CAL_SET:                 {-1, unmarshalCalibrationInfo},
+	INSERTION_TIME:          {13, unmarshalInsertionInfo},
 	METER_DATA:              {14, unmarshalMeterInfo},
 }
 
@@ -187,6 +195,31 @@ func (r *CalibrationData) Unmarshal(v []byte) {
 	r.Glucose = UnmarshalInt32(v[4:8])
 	r.Raw = UnmarshalInt32(v[8:12])
 	r.TimeApplied = UnmarshalTime(v[12:16])
+}
+
+type SensorChange byte
+
+//go:generate stringer -type SensorChange
+
+const (
+	Stopped SensorChange = 1
+	Started SensorChange = 7
+)
+
+var (
+	invalidTime = []byte{0xFF, 0xFF, 0xFF, 0xFF}
+)
+
+func unmarshalInsertionInfo(r *Record, v []byte) {
+	t := time.Time{}
+	u := v[8:12]
+	if !bytes.Equal(u, invalidTime) {
+		t = UnmarshalTime(u)
+	}
+	r.Insertion = &InsertionInfo{
+		SystemTime: t,
+		Event:      SensorChange(v[12]),
+	}
 }
 
 func unmarshalMeterInfo(r *Record, v []byte) {
