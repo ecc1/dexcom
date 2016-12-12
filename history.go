@@ -78,7 +78,7 @@ func MergeHistory(slices ...[]Record) []Record {
 
 const (
 	// Time window within which EGV and sensor readings will be merged.
-	glucoseReadingWindow = 2 * time.Second
+	glucoseReadingWindow = 10 * time.Second
 )
 
 func (cgm *Cgm) GlucoseReadings(since time.Time) []Record {
