@@ -147,8 +147,11 @@ func (cgm *Cgm) ReadPage(pageType PageType, pageNumber int, recordFn RecordFunc)
 			return true
 		}
 		r := Record{}
-		r.Unmarshal(pageType, rec)
-		done, err := recordFn(r)
+		done := false
+		err := r.Unmarshal(pageType, rec)
+		if err == nil {
+			done, err = recordFn(r)
+		}
 		if err != nil || done {
 			cgm.SetError(err)
 			return true
