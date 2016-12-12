@@ -41,7 +41,7 @@ func (cgm *Cgm) receivePacket() []byte {
 	}
 	ack := Command(header[3])
 	if ack != ACK {
-		cgm.SetError(fmt.Errorf("unexpected response code %02X in header % X", ack, header))
+		cgm.SetError(fmt.Errorf("unexpected response code %v in header % X", ack, header))
 		return nil
 	}
 	length := UnmarshalUint16(header[1:3])
