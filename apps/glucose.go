@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/ecc1/dexcom"
@@ -81,25 +82,25 @@ func main() {
 	if len(scans) == 0 {
 		log.Fatal("no records found")
 	}
+	results := dexcom.MergeHistory(scans...)
+	if *format == "json" {
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		err := enc.Encode(results)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 	if *format == "csv" {
 		fmt.Printf("Time,Type,Glucose,Sensor,Slope,Intercept,Scale,Decay\n")
 	}
-	for _, r := range dexcom.MergeHistory(scans...) {
+	for _, r := range results {
 		printRecord(r)
 	}
 }
 
 func printRecord(r dexcom.Record) {
-	if *format == "json" {
-		b, err := json.MarshalIndent(r, "", "  ")
-		if err != nil {
-			fmt.Println(err)
-			fmt.Printf("%+v\n", r)
-		} else {
-			fmt.Println(string(b))
-		}
-		return
-	}
 	t := r.Time().Format(userTimeLayout)
 	if r.Egv != nil || r.Sensor != nil {
 		glucose, noise, unfiltered, filtered, rssi := "", "", "", "", ""
