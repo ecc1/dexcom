@@ -10,21 +10,21 @@ type (
 	Record struct {
 		Timestamp   Timestamp
 		Sensor      *SensorInfo      `json:",omitempty"`
-		Egv         *EgvInfo         `json:",omitempty"`
+		EGV         *EGVInfo         `json:",omitempty"`
 		Calibration *CalibrationInfo `json:",omitempty"`
 		Insertion   *InsertionInfo   `json:",omitempty"`
 		Meter       *MeterInfo       `json:",omitempty"`
-		Xml         *XmlInfo         `json:",omitempty"`
+		XML         *XMLInfo         `json:",omitempty"`
 	}
 
 	SensorInfo struct {
 		Unfiltered uint32
 		Filtered   uint32
-		Rssi       int8
+		RSSI       int8
 		Unknown    byte
 	}
 
-	EgvInfo struct {
+	EGVInfo struct {
 		Glucose     uint16
 		DisplayOnly bool
 		Noise       uint8
@@ -65,11 +65,11 @@ var recordUnmarshal = map[PageType]struct {
 	length    int
 	unmarshal func(*Record, []byte)
 }{
-	MANUFACTURING_DATA:      {-1, unmarshalXmlInfo},
-	FIRMWARE_PARAMETER_DATA: {-1, unmarshalXmlInfo},
-	PC_SOFTWARE_PARAMETER:   {-1, unmarshalXmlInfo},
+	MANUFACTURING_DATA:      {-1, umarshalXMLInfo},
+	FIRMWARE_PARAMETER_DATA: {-1, umarshalXMLInfo},
+	PC_SOFTWARE_PARAMETER:   {-1, umarshalXMLInfo},
 	SENSOR_DATA:             {18, unmarshalSensorInfo},
-	EGV_DATA:                {11, unmarshalEgvInfo},
+	EGV_DATA:                {11, umarshalEGVInfo},
 	CAL_SET:                 {-1, unmarshalCalibrationInfo},
 	INSERTION_TIME:          {13, unmarshalInsertionInfo},
 	METER_DATA:              {14, unmarshalMeterInfo},
@@ -92,7 +92,7 @@ func unmarshalSensorInfo(r *Record, v []byte) {
 	r.Sensor = &SensorInfo{
 		Unfiltered: UnmarshalUint32(v[8:12]),
 		Filtered:   UnmarshalUint32(v[12:16]),
-		Rssi:       int8(v[16]),
+		RSSI:       int8(v[16]),
 		Unknown:    v[17],
 	}
 }
@@ -160,9 +160,9 @@ const (
 	EGV_TREND_ARROW_MASK = 0xF
 )
 
-func unmarshalEgvInfo(r *Record, v []byte) {
+func umarshalEGVInfo(r *Record, v []byte) {
 	g := UnmarshalUint16(v[8:10])
-	r.Egv = &EgvInfo{
+	r.EGV = &EGVInfo{
 		Glucose:     g & EGV_VALUE_MASK,
 		DisplayOnly: g&EGV_DISPLAY_ONLY != 0,
 		Noise:       (v[10] & EGV_NOISE_MASK) >> 4,

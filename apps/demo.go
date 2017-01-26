@@ -7,7 +7,7 @@ import (
 	"github.com/ecc1/dexcom"
 )
 
-func printXmlInfo(name string, xml *dexcom.XmlInfo) {
+func printXMLInfo(name string, xml *dexcom.XMLInfo) {
 	fmt.Printf("%s:\n", name)
 	for k, v := range *xml {
 		fmt.Printf("    %s: %s\n", k, v)
@@ -21,13 +21,13 @@ func main() {
 	}
 	fmt.Println("display time:", cgm.ReadDisplayTime())
 	fmt.Println("transmitter ID:", string(cgm.Cmd(dexcom.READ_TRANSMITTER_ID)))
-	printXmlInfo("firmware header", cgm.ReadFirmwareHeader())
+	printXMLInfo("firmware header", cgm.ReadFirmwareHeader())
 
 	hw := cgm.ReadXMLRecord(dexcom.MANUFACTURING_DATA)
-	printXmlInfo("manufacturing data", hw.Xml)
+	printXMLInfo("manufacturing data", hw.XML)
 	fmt.Printf("    %+v\n", hw.Timestamp)
 
 	sw := cgm.ReadXMLRecord(dexcom.PC_SOFTWARE_PARAMETER)
-	printXmlInfo("PC software parameter", sw.Xml)
+	printXMLInfo("PC software parameter", sw.XML)
 	fmt.Printf("    %+v\n", sw.Timestamp)
 }

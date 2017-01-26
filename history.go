@@ -9,7 +9,7 @@ const (
 	userTimeLayout = "2006-01-02 15:04:05"
 )
 
-func (cgm *Cgm) ReadHistory(pageType PageType, since time.Time) []Record {
+func (cgm *CGM) ReadHistory(pageType PageType, since time.Time) []Record {
 	first, last := cgm.ReadPageRange(pageType)
 	if cgm.Error() != nil {
 		return nil
@@ -28,7 +28,7 @@ func (cgm *Cgm) ReadHistory(pageType PageType, since time.Time) []Record {
 	return results
 }
 
-func (cgm *Cgm) ReadCount(pageType PageType, count int) []Record {
+func (cgm *CGM) ReadCount(pageType PageType, count int) []Record {
 	first, last := cgm.ReadPageRange(pageType)
 	if cgm.Error() != nil {
 		return nil
@@ -84,7 +84,7 @@ const (
 	glucoseReadingWindow = 10 * time.Second
 )
 
-func (cgm *Cgm) GlucoseReadings(since time.Time) []Record {
+func (cgm *CGM) GlucoseReadings(since time.Time) []Record {
 	sensor := cgm.ReadHistory(SENSOR_DATA, since)
 	if cgm.Error() != nil {
 		return nil
@@ -94,19 +94,19 @@ func (cgm *Cgm) GlucoseReadings(since time.Time) []Record {
 	if cgm.Error() != nil {
 		return nil
 	}
-	numEgv := len(egv)
+	numEGV := len(egv)
 	var readings []Record
 	i, j := 0, 0
 	for {
 		var r Record
-		if i < numSensor && j < numEgv {
+		if i < numSensor && j < numEGV {
 			sensorTime := sensor[i].Time()
 			egvTime := egv[j].Time()
 			delta := egvTime.Sub(sensorTime)
 			if 0 <= delta && delta < glucoseReadingWindow {
 				// Merge using sensor[i]'s slightly earlier time.
 				r = sensor[i]
-				r.Egv = egv[j].Egv
+				r.EGV = egv[j].EGV
 				i++
 				j++
 			} else if 0 <= -delta && -delta < glucoseReadingWindow {
@@ -125,7 +125,7 @@ func (cgm *Cgm) GlucoseReadings(since time.Time) []Record {
 		} else if i < numSensor {
 			r = sensor[i]
 			i++
-		} else if j < numEgv {
+		} else if j < numEGV {
 			r = egv[j]
 			j++
 		} else {

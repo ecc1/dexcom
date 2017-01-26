@@ -71,5 +71,5 @@ func OpenDB() *sql.DB {
 // suitable for inserting into the database.
 func glucoseRow(r dexcom.Record) (int64, uint16) {
 	t := r.Time()
-	return t.Unix(), r.Egv.Glucose
+	return t.Unix(), r.EGV.Glucose
 }

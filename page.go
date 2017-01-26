@@ -33,7 +33,7 @@ const (
 
 // ReadPageRange returns the starting and ending page for a given PageType.
 // The page numbers can be -1 if there are no entries (for example, USER_EVENT_DATA).
-func (cgm *Cgm) ReadPageRange(pageType PageType) (int, int) {
+func (cgm *CGM) ReadPageRange(pageType PageType) (int, int) {
 	v := cgm.Cmd(READ_DATABASE_PAGE_RANGE, byte(pageType))
 	if cgm.Error() != nil {
 		return -1, -1
@@ -45,7 +45,7 @@ func (cgm *Cgm) ReadPageRange(pageType PageType) (int, int) {
 // to each record that it reads, until it returns true or an error.
 type RecordFunc func(Record) (bool, error)
 
-type CrcError struct {
+type CRCError struct {
 	Kind               string
 	Received, Computed uint16
 	PageType           PageType
@@ -53,7 +53,7 @@ type CrcError struct {
 	Data               []byte
 }
 
-func (e CrcError) Error() string {
+func (e CRCError) Error() string {
 	if e.PageType == INVALID_PAGE {
 		return fmt.Sprintf("bad %s CRC (received %02X, computed %02X); data = % X", e.Kind, e.Received, e.Computed, e.Data)
 	}
@@ -63,7 +63,7 @@ func (e CrcError) Error() string {
 // ReadPage reads the specified page and applies recordFn to each record.
 // ReadPage returns true when an error is encountered or an invocation of
 // recordFn returns true, otherwise it returns false.
-func (cgm *Cgm) ReadPage(pageType PageType, pageNumber int, recordFn RecordFunc) bool {
+func (cgm *CGM) ReadPage(pageType PageType, pageNumber int, recordFn RecordFunc) bool {
 	buf := bytes.Buffer{}
 	buf.WriteByte(byte(pageType))
 	buf.Write(MarshalInt32(int32(pageNumber)))
@@ -80,7 +80,7 @@ func (cgm *Cgm) ReadPage(pageType PageType, pageNumber int, recordFn RecordFunc)
 	crc := UnmarshalUint16(v[headerSize-2 : headerSize])
 	calc := crc16(v[:headerSize-2])
 	if crc != calc {
-		cgm.SetError(CrcError{
+		cgm.SetError(CRCError{
 			Kind:       "page",
 			Received:   crc,
 			Computed:   calc,
@@ -136,7 +136,7 @@ func (cgm *Cgm) ReadPage(pageType PageType, pageNumber int, recordFn RecordFunc)
 		rec = rec[:recordLen-2]
 		calc := crc16(rec)
 		if crc != calc {
-			cgm.SetError(CrcError{
+			cgm.SetError(CRCError{
 				Kind:       "record",
 				Received:   crc,
 				Computed:   calc,
@@ -160,7 +160,7 @@ func (cgm *Cgm) ReadPage(pageType PageType, pageNumber int, recordFn RecordFunc)
 	return false
 }
 
-func (cgm *Cgm) ReadRecords(pageType PageType, recordFn RecordFunc) {
+func (cgm *CGM) ReadRecords(pageType PageType, recordFn RecordFunc) {
 	first, last := cgm.ReadPageRange(pageType)
 	if cgm.Error() != nil {
 		return
@@ -171,7 +171,7 @@ func (cgm *Cgm) ReadRecords(pageType PageType, recordFn RecordFunc) {
 // IterRecords reads the specified page range and applies recordFn to each
 // record in each page.  Pages are visited in reverse order to facilitate
 // scanning for recent records.
-func (cgm *Cgm) IterRecords(pageType PageType, firstPage, lastPage int, recordFn RecordFunc) {
+func (cgm *CGM) IterRecords(pageType PageType, firstPage, lastPage int, recordFn RecordFunc) {
 	for n := lastPage; n >= firstPage; n-- {
 		done := cgm.ReadPage(pageType, n, recordFn)
 		if cgm.Error() != nil || done {

@@ -102,16 +102,16 @@ func main() {
 
 func printRecord(r dexcom.Record) {
 	t := r.Time().Format(userTimeLayout)
-	if r.Egv != nil || r.Sensor != nil {
+	if r.EGV != nil || r.Sensor != nil {
 		glucose, noise, unfiltered, filtered, rssi := "", "", "", "", ""
-		if r.Egv != nil {
-			glucose = fmt.Sprintf("%d", r.Egv.Glucose)
-			noise = fmt.Sprintf("%d", r.Egv.Noise)
+		if r.EGV != nil {
+			glucose = fmt.Sprintf("%d", r.EGV.Glucose)
+			noise = fmt.Sprintf("%d", r.EGV.Noise)
 		}
 		if r.Sensor != nil {
 			unfiltered = fmt.Sprintf("%d", r.Sensor.Unfiltered)
 			filtered = fmt.Sprintf("%d", r.Sensor.Filtered)
-			rssi = fmt.Sprintf("%d", r.Sensor.Rssi)
+			rssi = fmt.Sprintf("%d", r.Sensor.RSSI)
 		}
 		switch *format {
 		case "csv":

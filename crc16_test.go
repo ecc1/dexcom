@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestCrc16(t *testing.T) {
+func TestCRC16(t *testing.T) {
 	cases := []struct {
 		msg []byte
 		sum uint16

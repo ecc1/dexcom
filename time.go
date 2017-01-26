@@ -48,7 +48,7 @@ func displayTime(sys uint32, offset int32) time.Time {
 // SYSTEM_TIME = RTC + SYSTEM_TIME_OFFSET
 // DISPLAY_TIME = SYSTEM_TIME + DISPLAY_TIME_OFFSET
 
-func (cgm *Cgm) ReadDisplayTime() time.Time {
+func (cgm *CGM) ReadDisplayTime() time.Time {
 	v := cgm.Cmd(READ_DISPLAY_TIME_OFFSET)
 	if cgm.Error() != nil {
 		return time.Time{}
@@ -62,7 +62,7 @@ func (cgm *Cgm) ReadDisplayTime() time.Time {
 	return displayTime(sysTime, displayOffset)
 }
 
-func (cgm *Cgm) SetDisplayTime(t time.Time) {
+func (cgm *CGM) SetDisplayTime(t time.Time) {
 	v := cgm.Cmd(READ_SYSTEM_TIME)
 	if cgm.Error() != nil {
 		return

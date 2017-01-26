@@ -18,15 +18,15 @@ type Connection interface {
 	Close()
 }
 
-type Cgm struct {
+type CGM struct {
 	conn Connection
 	err  error
 }
 
 // Open first attempts to open a USB connection;
 // if that fails it tries a BLE connection.
-func Open() *Cgm {
-	cgm := &Cgm{}
+func Open() *CGM {
+	cgm := &CGM{}
 	cgm.conn, cgm.err = OpenUSB()
 	if cgm.err == nil {
 		return cgm
@@ -39,10 +39,10 @@ func Open() *Cgm {
 	return cgm
 }
 
-func (cgm *Cgm) Error() error {
+func (cgm *CGM) Error() error {
 	return cgm.err
 }
 
-func (cgm *Cgm) SetError(err error) {
+func (cgm *CGM) SetError(err error) {
 	cgm.err = err
 }

@@ -23,20 +23,20 @@ func (r Record) NightscoutEntry() nightscout.Entry {
 	}
 	if r.Meter != nil {
 		e.Type = "mbg"
-		e.Mbg = int(r.Meter.Glucose)
+		e.MBG = int(r.Meter.Glucose)
 		return e
 	}
-	if r.Sensor != nil || r.Egv != nil {
+	if r.Sensor != nil || r.EGV != nil {
 		e.Type = "sgv"
 		if r.Sensor != nil {
 			e.Unfiltered = int(r.Sensor.Unfiltered)
 			e.Filtered = int(r.Sensor.Filtered)
-			e.Rssi = int(r.Sensor.Rssi)
+			e.RSSI = int(r.Sensor.RSSI)
 		}
-		if r.Egv != nil {
-			e.Sgv = int(r.Egv.Glucose)
-			e.Direction = nightscoutTrend(r.Egv.Trend)
-			e.Noise = int(r.Egv.Noise)
+		if r.EGV != nil {
+			e.SGV = int(r.EGV.Glucose)
+			e.Direction = nightscoutTrend(r.EGV.Trend)
+			e.Noise = int(r.EGV.Noise)
 		}
 		return e
 	}

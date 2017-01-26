@@ -23,12 +23,12 @@ func marshalPacket(cmd Command, data []byte) []byte {
 	return buf.Bytes()
 }
 
-func (cgm *Cgm) sendPacket(pkt []byte) {
+func (cgm *CGM) sendPacket(pkt []byte) {
 	err := cgm.conn.Send(pkt)
 	cgm.SetError(err)
 }
 
-func (cgm *Cgm) receivePacket() []byte {
+func (cgm *CGM) receivePacket() []byte {
 	header := make([]byte, 4)
 	err := cgm.conn.Receive(header)
 	if err != nil {
@@ -61,7 +61,7 @@ func (cgm *Cgm) receivePacket() []byte {
 	body := append(header, data...)
 	calc := crc16(body)
 	if crc != calc {
-		cgm.SetError(CrcError{
+		cgm.SetError(CRCError{
 			Kind:     "packet",
 			Received: crc,
 			Computed: calc,
@@ -74,7 +74,7 @@ func (cgm *Cgm) receivePacket() []byte {
 
 // Cmd creates a Dexcom packet with the given command and parameters,
 // sends it to the device, and returns the response.
-func (cgm *Cgm) Cmd(cmd Command, params ...byte) []byte {
+func (cgm *CGM) Cmd(cmd Command, params ...byte) []byte {
 	if cgm.Error() != nil {
 		return nil
 	}
