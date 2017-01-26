@@ -58,12 +58,12 @@ func main() {
 		cutoff = time.Now().Add(-*duration)
 		log.Printf("retrieving records since %s", cutoff.Format(userTimeLayout))
 	}
-	scans := [][]dexcom.Record{}
+	var scans [][]dexcom.Record
 	for _, t := range recordTypes {
 		if !*t.flag {
 			continue
 		}
-		v := []dexcom.Record{}
+		var v []dexcom.Record
 		// Special case when both EGV and sensor records are requested.
 		if t.page == dexcom.EGV_DATA && *sensor {
 			v = cgm.GlucoseReadings(cutoff)

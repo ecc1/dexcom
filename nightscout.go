@@ -69,7 +69,7 @@ const (
 )
 
 func MissingNightscoutEntries(records []Record, gaps []nightscout.Interval) []nightscout.Entry {
-	missing := []nightscout.Entry{}
+	var missing []nightscout.Entry
 	i := 0
 	for _, g := range gaps {
 		// Skip over records that lie outside the gap.

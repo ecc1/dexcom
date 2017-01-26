@@ -14,7 +14,7 @@ func (cgm *Cgm) ReadHistory(pageType PageType, since time.Time) []Record {
 	if cgm.Error() != nil {
 		return nil
 	}
-	results := []Record{}
+	var results []Record
 	proc := func(r Record) (bool, error) {
 		t := r.Time()
 		if t.Before(since) {
@@ -33,7 +33,7 @@ func (cgm *Cgm) ReadCount(pageType PageType, count int) []Record {
 	if cgm.Error() != nil {
 		return nil
 	}
-	results := []Record{}
+	var results []Record
 	proc := func(r Record) (bool, error) {
 		results = append(results, r)
 		return len(results) == count, nil
@@ -95,10 +95,10 @@ func (cgm *Cgm) GlucoseReadings(since time.Time) []Record {
 		return nil
 	}
 	numEgv := len(egv)
-	readings := []Record{}
+	var readings []Record
 	i, j := 0, 0
 	for {
-		r := Record{}
+		var r Record
 		if i < numSensor && j < numEgv {
 			sensorTime := sensor[i].Time()
 			egvTime := egv[j].Time()
