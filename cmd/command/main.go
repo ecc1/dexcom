@@ -17,13 +17,13 @@ func main() {
 	if len(os.Args) < 2 {
 		usage()
 	}
-	code, err := strconv.ParseUint(os.Args[1], 0, 8)
+	code, err := strconv.ParseUint(os.Args[1], 16, 8)
 	if err != nil {
 		log.Fatal(err)
 	}
 	params := make([]byte, len(os.Args)-2)
 	for i, arg := range os.Args[2:] {
-		p, err := strconv.ParseUint(arg, 0, 8)
+		p, err := strconv.ParseUint(arg, 16, 8)
 		if err != nil {
 			log.Fatal(err)
 		}
