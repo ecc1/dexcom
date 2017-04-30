@@ -12,7 +12,7 @@ const (
 )
 
 type usbConn struct {
-	port usbserial.Port
+	port *usbserial.Port
 }
 
 // Open locates the USB device for a Dexcom CGM receiver and opens it.
