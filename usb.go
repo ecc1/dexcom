@@ -5,10 +5,9 @@ import (
 )
 
 const (
-	// hex IDs that should match the idVendor and idProduct files
-	// in /sys/bus/usb/devices
-	dexcomVendor  = "22a3"
-	dexcomProduct = "0047"
+	// USB IDs for the Dexcom G4 receiver.
+	dexcomVendor  = 0x22a3
+	dexcomProduct = 0x0047
 )
 
 type usbConn struct {
