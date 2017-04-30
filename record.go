@@ -78,10 +78,10 @@ var recordUnmarshal = map[PageType]struct {
 func (r *Record) Unmarshal(pageType PageType, v []byte) error {
 	u, found := recordUnmarshal[pageType]
 	if !found {
-		return fmt.Errorf("unmarshaling of %v records is unimplemented", pageType)
+		return fmt.Errorf("unmarshaling of %v records is unimplemented: % X", pageType, v)
 	}
 	if u.length > 0 && len(v) != u.length {
-		return fmt.Errorf("wrong length (%d) for %d-byte %v record", len(v), u.length, pageType)
+		return fmt.Errorf("wrong length for %d-byte %v record: % X", u.length, pageType, v)
 	}
 	r.Timestamp.Unmarshal(v[0:8])
 	u.unmarshal(r, v)
