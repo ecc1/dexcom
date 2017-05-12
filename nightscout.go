@@ -68,7 +68,7 @@ const (
 	edgeMargin = 1 * time.Minute
 )
 
-func MissingNightscoutEntries(records []Record, gaps []nightscout.Interval) []nightscout.Entry {
+func MissingNightscoutEntries(records []Record, gaps []nightscout.Gap) []nightscout.Entry {
 	var missing []nightscout.Entry
 	i := 0
 	for _, g := range gaps {
