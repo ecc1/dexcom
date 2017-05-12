@@ -59,36 +59,17 @@ var (
 )
 
 func connect(conn *ble.Connection) error {
-	forceReauth := false
-	device, err := conn.GetDevice(receiverService)
-	if err != nil || !device.Connected() {
-		forceReauth = true
-		// Remove device to avoid "Software caused connection abort" error.
-		device, err = conn.GetDeviceByName(receiverName)
-		if err == nil {
-			adapter, err := conn.GetAdapter()
-			if err != nil {
-				return err
-			}
-			err = adapter.RemoveDevice(device)
-			if err != nil {
-				return err
-			}
-		}
-		device, err = conn.Discover(10*time.Second, receiverService)
-		if err != nil {
-			return err
-		}
-	}
+	device, err := findDevice(conn)
+	reauth := false
 	if !device.Connected() {
-		forceReauth = true
+		reauth = true
 		err = device.Connect()
 		if err != nil {
 			return err
 		}
 	}
 	if !device.Paired() {
-		forceReauth = true
+		reauth = true
 		err = device.Pair()
 		if err != nil {
 			return err
@@ -98,13 +79,33 @@ func connect(conn *ble.Connection) error {
 	if err != nil {
 		return err
 	}
-	return authenticate(device, forceReauth)
+	return authenticate(device, reauth)
+}
+
+func findDevice(conn *ble.Connection) (ble.Device, error) {
+	device, err := conn.GetDevice(receiverService)
+	if err == nil && device.Connected() {
+		return device, nil
+	}
+	// Remove device to avoid "Software caused connection abort" error.
+	device, err = conn.GetDeviceByName(receiverName)
+	if err == nil {
+		adapter, err := conn.GetAdapter()
+		if err != nil {
+			return nil, err
+		}
+		err = adapter.RemoveDevice(device)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return conn.Discover(10*time.Second, receiverService)
 }
 
 var (
 	authentication = dexcomUUID(0xacac)
 	authEnvVar     = "DEXCOM_CGM_ID"
-	authCode       = []byte{}
+	authCode       []byte
 )
 
 func initAuthCode() error {
