@@ -127,9 +127,13 @@ func (cgm *CGM) ReadPage(pageType PageType, pageNumber int, recordFn RecordFunc)
 	recordLen := dataLen / numRecords
 	data = data[:dataLen]
 
-	// Slice data into records, validate per-record CRCs,
-	// unmarshal record, and apply recordFn.
-	// Iterate in reverse order to facilitate scanning for recent records.
+	return cgm.processRecords(pageType, pageNumber, recordFn, data, recordLen, numRecords)
+}
+
+// Slice data into records, validate per-record CRCs, unmarshal record,
+// and apply recordFn.
+// Iterate in reverse order to facilitate scanning for recent records.
+func (cgm *CGM) processRecords(pageType PageType, pageNumber int, recordFn RecordFunc, data []byte, recordLen int, numRecords int) bool {
 	for i := numRecords - 1; i >= 0; i-- {
 		rec := data[i*recordLen : (i+1)*recordLen]
 		crc := UnmarshalUint16(rec[recordLen-2 : recordLen])
