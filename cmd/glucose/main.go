@@ -28,10 +28,10 @@ var (
 		flag *bool
 		page dexcom.PageType
 	}{
-		{egv, dexcom.EGV_DATA},
-		{sensor, dexcom.SENSOR_DATA},
-		{calibration, dexcom.CAL_SET},
-		{meter, dexcom.METER_DATA},
+		{egv, dexcom.EGVData},
+		{sensor, dexcom.SensorData},
+		{calibration, dexcom.CalibrationData},
+		{meter, dexcom.MeterData},
 	}
 )
 
@@ -65,9 +65,9 @@ func main() {
 		}
 		var v []dexcom.Record
 		// Special case when both EGV and sensor records are requested.
-		if t.page == dexcom.EGV_DATA && *sensor {
+		if t.page == dexcom.EGVData && *sensor {
 			v = cgm.GlucoseReadings(cutoff)
-		} else if t.page == dexcom.SENSOR_DATA && *egv {
+		} else if t.page == dexcom.SensorData && *egv {
 			continue
 		} else {
 			v = cgm.ReadHistory(t.page, cutoff)

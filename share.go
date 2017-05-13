@@ -11,9 +11,9 @@ import (
 )
 
 type bleConn struct {
-	conn *ble.Connection
-	tx   ble.Characteristic
-	rx   chan byte
+	*ble.Connection
+	tx ble.Characteristic
+	rx chan byte
 }
 
 const (
@@ -21,6 +21,7 @@ const (
 	gattMTU = 20
 )
 
+// Send writes data over the BLE connection.
 func (conn *bleConn) Send(data []byte) error {
 	// Dexcom G4 Share expects each BLE message to start with two 01 bytes.
 	data = append([]byte{0x01, 0x01}, data...)
@@ -40,6 +41,7 @@ func (conn *bleConn) Send(data []byte) error {
 	}
 }
 
+// Receive reads data from the BLE connection.
 func (conn *bleConn) Receive(data []byte) error {
 	const receiveTimeout = 5 * time.Second
 	for i := 0; i < len(data); i++ {
@@ -60,6 +62,9 @@ var (
 
 func connect(conn *ble.Connection) error {
 	device, err := findDevice(conn)
+	if err != nil {
+		return err
+	}
 	reauth := false
 	if !device.Connected() {
 		reauth = true
@@ -94,8 +99,7 @@ func findDevice(conn *ble.Connection) (ble.Device, error) {
 		if err != nil {
 			return nil, err
 		}
-		err = adapter.RemoveDevice(device)
-		if err != nil {
+		if err = adapter.RemoveDevice(device); err != nil {
 			return nil, err
 		}
 	}
@@ -133,6 +137,7 @@ func authenticate(device ble.Device, reauth bool) error {
 		return err
 	}
 	if !reauth {
+		// nolint
 		data, err := auth.ReadValue()
 		if err != nil {
 			return err
@@ -155,6 +160,7 @@ var (
 	receiveData = dexcomUUID(0xb20b)
 )
 
+// OpenBLE makes a BLE connection to a Dexcom G4 Share receiver.
 func OpenBLE() (Connection, error) {
 	conn, err := ble.Open()
 	if err != nil {
@@ -187,13 +193,9 @@ func OpenBLE() (Connection, error) {
 		conn.Close()
 		return nil, err
 	}
-	return &bleConn{conn: conn, tx: tx, rx: rx}, nil
+	return &bleConn{Connection: conn, tx: tx, rx: rx}, nil
 }
 
 func dexcomUUID(id uint16) string {
 	return fmt.Sprintf("f0ac%04x-ebfa-f96f-28da-076c35a521db", id)
-}
-
-func (conn *bleConn) Close() {
-	conn.conn.Close()
 }

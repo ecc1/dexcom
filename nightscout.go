@@ -7,6 +7,7 @@ import (
 	"github.com/ecc1/nightscout"
 )
 
+// NightscoutEntry converts a Record to a nightscout.Entry.
 func (r Record) NightscoutEntry() nightscout.Entry {
 	t := r.Time()
 	e := nightscout.Entry{
@@ -45,19 +46,19 @@ func (r Record) NightscoutEntry() nightscout.Entry {
 
 func nightscoutTrend(t Trend) string {
 	switch t {
-	case UP_UP:
+	case UpUp:
 		return "DoubleUp"
-	case UP:
+	case Up:
 		return "SingeUp"
-	case UP_45:
+	case Up45:
 		return "FortyFiveUp"
-	case FLAT:
+	case Flat:
 		return "Flat"
-	case DOWN_45:
+	case Down45:
 		return "FortyFiveDown"
-	case DOWN:
+	case Down:
 		return "SingleDown"
-	case DOWN_DOWN:
+	case DownDown:
 		return "DoubleDown"
 	default:
 		return ""
@@ -68,6 +69,8 @@ const (
 	edgeMargin = 1 * time.Minute
 )
 
+// MissingNightscoutEntries returns nightscout.Entry values
+// for those records that fall within the given gaps.
 func MissingNightscoutEntries(records []Record, gaps []nightscout.Gap) []nightscout.Entry {
 	var missing []nightscout.Entry
 	i := 0

@@ -20,14 +20,14 @@ func main() {
 		log.Fatal(cgm.Error())
 	}
 	fmt.Println("display time:", cgm.ReadDisplayTime())
-	fmt.Println("transmitter ID:", string(cgm.Cmd(dexcom.READ_TRANSMITTER_ID)))
+	fmt.Println("transmitter ID:", string(cgm.Cmd(dexcom.ReadTransmitterID)))
 	printXMLInfo("firmware header", cgm.ReadFirmwareHeader())
 
-	hw := cgm.ReadXMLRecord(dexcom.MANUFACTURING_DATA)
+	hw := cgm.ReadXMLRecord(dexcom.ManufacturingData)
 	printXMLInfo("manufacturing data", hw.XML)
 	fmt.Printf("    %+v\n", hw.Timestamp)
 
-	sw := cgm.ReadXMLRecord(dexcom.PC_SOFTWARE_PARAMETER)
+	sw := cgm.ReadXMLRecord(dexcom.SoftwareData)
 	printXMLInfo("PC software parameter", sw.XML)
 	fmt.Printf("    %+v\n", sw.Timestamp)
 }

@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	pageTypeFlag = flag.Int("p", int(dexcom.EGV_DATA), "`page type` to read")
+	pageTypeFlag = flag.Int("p", int(dexcom.EGVData), "`page type` to read")
 	numRecords   = flag.Int("n", 10, "number of `records` to get")
 	all          = flag.Bool("a", false, "get all records")
 )

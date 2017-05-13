@@ -1,52 +1,53 @@
 package dexcom
 
-// A Command specifies an operation to be performed by the Dexcom CGM receiver.
+// Command represents a Dexcom CGM receiver command.
 type Command byte
 
 //go:generate stringer -type Command
 
+// Dexcom G4 receiver commands.
 const (
-	NULL                          Command = 0
-	ACK                           Command = 1
-	NAK                           Command = 2
-	INVALID_COMMAND               Command = 3
-	INVALID_PARAM                 Command = 4
-	INCOMPLETE_PACKET_RECEIVED    Command = 5
-	RECEIVER_ERROR                Command = 6
-	INVALID_MODE                  Command = 7
-	PING                          Command = 10
-	READ_FIRMWARE_HEADER          Command = 11
-	READ_DATABASE_PARTITION_INFO  Command = 15
-	READ_DATABASE_PAGE_RANGE      Command = 16
-	READ_DATABASE_PAGES           Command = 17
-	READ_DATABASE_PAGE_HEADER     Command = 18
-	READ_TRANSMITTER_ID           Command = 25
-	WRITE_TRANSMITTER_ID          Command = 26
-	READ_LANGUAGE                 Command = 27
-	WRITE_LANGUAGE                Command = 28
-	READ_DISPLAY_TIME_OFFSET      Command = 29
-	WRITE_DISPLAY_TIME_OFFSET     Command = 30
-	READ_RTC                      Command = 31
-	RESET_RECEIVER                Command = 32
-	READ_BATTERY_LEVEL            Command = 33
-	READ_SYSTEM_TIME              Command = 34
-	READ_SYSTEM_TIME_OFFSET       Command = 35
-	WRITE_SYSTEM_TIME             Command = 36
-	READ_GLUCOSE_UNIT             Command = 37
-	WRITE_GLUCOSE_UNIT            Command = 38
-	READ_BLINDED_MODE             Command = 39
-	WRITE_BLINDED_MODE            Command = 40
-	READ_CLOCK_MODE               Command = 41
-	WRITE_CLOCK_MODE              Command = 42
-	READ_DEVICE_MODE              Command = 43
-	ERASE_DATABASE                Command = 45
-	SHUTDOWN_RECEIVER             Command = 46
-	WRITE_PC_PARAMETERS           Command = 47
-	READ_BATTERY_STATE            Command = 48
-	READ_HARDWARE_BOARD_ID        Command = 49
-	READ_FIRMWARE_SETTINGS        Command = 54
-	READ_ENABLE_SETUP_WIZARD_FLAG Command = 55
-	READ_SETUP_WIZARD_STATE       Command = 57
-	READ_CHARGER_CURRENT_SETTING  Command = 59
-	WRITE_CHARGER_CURRENT_SETTING Command = 60
+	Null                       Command = 0
+	Ack                        Command = 1
+	Nak                        Command = 2
+	InvalidCommand             Command = 3
+	InvalidParam               Command = 4
+	IncompletePacketReceived   Command = 5
+	ReceiverError              Command = 6
+	InvalidMode                Command = 7
+	Ping                       Command = 10
+	ReadFirmwareHeader         Command = 11
+	ReadDatabasePartitionInfo  Command = 15
+	ReadDatabasePageRange      Command = 16
+	ReadDatabasePages          Command = 17
+	ReadDatabasePageHeader     Command = 18
+	ReadTransmitterID          Command = 25
+	WriteTransmitterID         Command = 26
+	ReadLanguage               Command = 27
+	WriteLanguage              Command = 28
+	ReadDisplayTimeOffset      Command = 29
+	WriteDisplayTimeOffset     Command = 30
+	ReadRTC                    Command = 31
+	ResetReceiver              Command = 32
+	ReadBatteryLevel           Command = 33
+	ReadSystemTime             Command = 34
+	ReadSystemTimeOffset       Command = 35
+	WriteSystemTime            Command = 36
+	ReadGlucoseUnits           Command = 37
+	WriteGlucoseUnits          Command = 38
+	ReadBlindMode              Command = 39
+	WriteBlindMode             Command = 40
+	ReadClockMode              Command = 41
+	WriteClockMode             Command = 42
+	ReadDeviceMode             Command = 43
+	EraseDatabase              Command = 45
+	ShutdownReceiver           Command = 46
+	WriteSoftwareParameters    Command = 47
+	ReadBatteryState           Command = 48
+	ReadHardwareID             Command = 49
+	ReadFirmwareSettings       Command = 54
+	ReadEnableSetupWizardFlag  Command = 55
+	ReadSetupWizardState       Command = 57
+	ReadChargerCurrentSetting  Command = 59
+	WriteChargerCurrentSetting Command = 60
 )

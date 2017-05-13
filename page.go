@@ -5,46 +5,48 @@ import (
 	"fmt"
 )
 
-// A PageType specifies a type of record stored by the Dexcom CGM receiver.
+// A PageType specifies a type of record stored by the Dexcom G4 receiver.
 type PageType byte
 
 //go:generate stringer -type PageType
 
+// Types of CGM records stored by the Dexcom G4 receiver.
 const (
-	MANUFACTURING_DATA      PageType = 0
-	FIRMWARE_PARAMETER_DATA PageType = 1
-	PC_SOFTWARE_PARAMETER   PageType = 2
-	SENSOR_DATA             PageType = 3
-	EGV_DATA                PageType = 4
-	CAL_SET                 PageType = 5
-	DEVIATION               PageType = 6
-	INSERTION_TIME          PageType = 7
-	RECEIVER_LOG_DATA       PageType = 8
-	RECEIVER_ERROR_DATA     PageType = 9
-	METER_DATA              PageType = 10
-	USER_EVENT_DATA         PageType = 11
-	USER_SETTING_DATA       PageType = 12
+	ManufacturingData PageType = 0
+	FirmwareData      PageType = 1
+	SoftwareData      PageType = 2
+	SensorData        PageType = 3
+	EGVData           PageType = 4
+	CalibrationData   PageType = 5
+	DeviationData     PageType = 6
+	InsertionTimeData PageType = 7
+	ReceiverLogData   PageType = 8
+	ReceiverErrorData PageType = 9
+	MeterData         PageType = 10
+	UserEventData     PageType = 11
+	UserSettingData   PageType = 12
 
-	FirstPageType = MANUFACTURING_DATA
-	LastPageType  = USER_SETTING_DATA
+	FirstPageType = ManufacturingData
+	LastPageType  = UserSettingData
 
-	INVALID_PAGE PageType = 0xFF
+	InvalidPage PageType = 0xFF
 )
 
 // ReadPageRange returns the starting and ending page for a given PageType.
 // The page numbers can be -1 if there are no entries (for example, USER_EVENT_DATA).
 func (cgm *CGM) ReadPageRange(pageType PageType) (int, int) {
-	v := cgm.Cmd(READ_DATABASE_PAGE_RANGE, byte(pageType))
+	v := cgm.Cmd(ReadDatabasePageRange, byte(pageType))
 	if cgm.Error() != nil {
 		return -1, -1
 	}
-	return int(UnmarshalInt32(v[:4])), int(UnmarshalInt32(v[4:]))
+	return int(unmarshalInt32(v[:4])), int(unmarshalInt32(v[4:]))
 }
 
-// The ReadPage function applies a function of type RecordFunc
+// RecordFunc represents a function that ReadPage applies
 // to each record that it reads, until it returns true or an error.
 type RecordFunc func(Record) (bool, error)
 
+// CRCError indicates that a CRC error was detected.
 type CRCError struct {
 	Kind               string
 	Received, Computed uint16
@@ -54,7 +56,7 @@ type CRCError struct {
 }
 
 func (e CRCError) Error() string {
-	if e.PageType == INVALID_PAGE {
+	if e.PageType == InvalidPage {
 		return fmt.Sprintf("bad %s CRC (received %02X, computed %02X); data = % X", e.Kind, e.Received, e.Computed, e.Data)
 	}
 	return fmt.Sprintf("bad %s CRC (received %02X, computed %02X) for %v page %d; data = % X", e.Kind, e.Received, e.Computed, e.PageType, e.PageNumber, e.Data)
@@ -66,9 +68,9 @@ func (e CRCError) Error() string {
 func (cgm *CGM) ReadPage(pageType PageType, pageNumber int, recordFn RecordFunc) bool {
 	buf := bytes.Buffer{}
 	buf.WriteByte(byte(pageType))
-	buf.Write(MarshalInt32(int32(pageNumber)))
+	buf.Write(marshalInt32(int32(pageNumber)))
 	buf.WriteByte(1)
-	v := cgm.Cmd(READ_DATABASE_PAGES, buf.Bytes()...)
+	v := cgm.Cmd(ReadDatabasePages, buf.Bytes()...)
 	if cgm.Error() != nil {
 		return true
 	}
@@ -77,7 +79,7 @@ func (cgm *CGM) ReadPage(pageType PageType, pageNumber int, recordFn RecordFunc)
 		cgm.SetError(fmt.Errorf("invalid page length (%d) for %v page %d", len(v), pageType, pageNumber))
 		return true
 	}
-	crc := UnmarshalUint16(v[headerSize-2 : headerSize])
+	crc := unmarshalUint16(v[headerSize-2 : headerSize])
 	calc := crc16(v[:headerSize-2])
 	if crc != calc {
 		cgm.SetError(CRCError{
@@ -90,8 +92,8 @@ func (cgm *CGM) ReadPage(pageType PageType, pageNumber int, recordFn RecordFunc)
 		})
 		return true
 	}
-	// firstIndex := int(UnmarshalInt32(v[0:4]))
-	numRecords := int(UnmarshalInt32(v[4:8]))
+	// firstIndex := int(unmarshalInt32(v[0:4]))
+	numRecords := int(unmarshalInt32(v[4:8]))
 
 	r := PageType(v[8])
 	if r != pageType {
@@ -101,15 +103,15 @@ func (cgm *CGM) ReadPage(pageType PageType, pageNumber int, recordFn RecordFunc)
 
 	// rev := v[9]
 
-	p := int(UnmarshalInt32(v[10:14]))
+	p := int(unmarshalInt32(v[10:14]))
 	if p != pageNumber {
 		cgm.SetError(fmt.Errorf("unexpected page number %d for %v page %d", p, pageType, pageNumber))
 		return true
 	}
 
-	// r1 := UnmarshalInt32(v[14:18])
-	// r2 := UnmarshalInt32(v[18:22])
-	// r3 := UnmarshalInt32(v[22:26])
+	// r1 := unmarshalInt32(v[14:18])
+	// r2 := unmarshalInt32(v[18:22])
+	// r3 := unmarshalInt32(v[22:26])
 
 	data := v[headerSize:]
 	dataLen := len(data)
@@ -123,7 +125,7 @@ func (cgm *CGM) ReadPage(pageType PageType, pageNumber int, recordFn RecordFunc)
 	}
 	// Round dataLen up to a multiple of numRecords so we keep
 	// any 0xFF bytes that are part of the last record.
-	dataLen = ((dataLen + numRecords - 1) / numRecords) * numRecords
+	dataLen = (dataLen + numRecords - 1) / numRecords * numRecords
 	recordLen := dataLen / numRecords
 	data = data[:dataLen]
 
@@ -136,7 +138,7 @@ func (cgm *CGM) ReadPage(pageType PageType, pageNumber int, recordFn RecordFunc)
 func (cgm *CGM) processRecords(pageType PageType, pageNumber int, recordFn RecordFunc, data []byte, recordLen int, numRecords int) bool {
 	for i := numRecords - 1; i >= 0; i-- {
 		rec := data[i*recordLen : (i+1)*recordLen]
-		crc := UnmarshalUint16(rec[recordLen-2 : recordLen])
+		crc := unmarshalUint16(rec[recordLen-2 : recordLen])
 		rec = rec[:recordLen-2]
 		calc := crc16(rec)
 		if crc != calc {
@@ -152,7 +154,7 @@ func (cgm *CGM) processRecords(pageType PageType, pageNumber int, recordFn Recor
 		}
 		r := Record{}
 		done := false
-		err := r.Unmarshal(pageType, rec)
+		err := r.unmarshal(pageType, rec)
 		if err == nil {
 			done, err = recordFn(r)
 		}
@@ -164,6 +166,7 @@ func (cgm *CGM) processRecords(pageType PageType, pageNumber int, recordFn Recor
 	return false
 }
 
+// ReadRecords applies recordFn to each record of the specified page type.
 func (cgm *CGM) ReadRecords(pageType PageType, recordFn RecordFunc) {
 	first, last := cgm.ReadPageRange(pageType)
 	if cgm.Error() != nil {

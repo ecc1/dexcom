@@ -11,26 +11,26 @@ const (
 )
 
 type usbConn struct {
-	port *usbserial.Port
+	*usbserial.Port
 }
 
-// Open locates the USB device for a Dexcom CGM receiver and opens it.
+// OpenUSB opens the USB serial device for a Dexcom G4 receiver.
 func OpenUSB() (Connection, error) {
 	port, err := usbserial.Open(dexcomVendor, dexcomProduct)
-	if err != nil {
-		return nil, err
-	}
-	return &usbConn{port: port}, nil
+	return &usbConn{port}, err
 }
 
-func (conn usbConn) Send(data []byte) error {
-	return conn.port.Write(data)
+// Send writes data over the USB connection.
+func (conn *usbConn) Send(data []byte) error {
+	return conn.Write(data)
 }
 
-func (conn usbConn) Receive(data []byte) error {
-	return conn.port.Read(data)
+// Receive reads data from the USB connection.
+func (conn *usbConn) Receive(data []byte) error {
+	return conn.Read(data)
 }
 
-func (conn usbConn) Close() {
-	conn.port.Close()
+// Close closes the USB connection.
+func (conn *usbConn) Close() {
+	conn.Port.Close() // nolint
 }

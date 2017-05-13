@@ -15,22 +15,22 @@ func marshalPacket(cmd Command, data []byte) []byte {
 	buf := bytes.Buffer{}
 	buf.WriteByte(startOfMessage)
 	length := uint16(4 + len(data) + 2) // header, data, CRC-16
-	buf.Write(MarshalUint16(length))
+	buf.Write(marshalUint16(length))
 	buf.WriteByte(byte(cmd))
 	buf.Write(data)
 	body := buf.Bytes()
-	buf.Write(MarshalUint16(crc16(body))) // append CRC-16
+	buf.Write(marshalUint16(crc16(body))) // append CRC-16
 	return buf.Bytes()
 }
 
 func (cgm *CGM) sendPacket(pkt []byte) {
-	err := cgm.conn.Send(pkt)
+	err := cgm.Send(pkt)
 	cgm.SetError(err)
 }
 
 func (cgm *CGM) receivePacket() []byte {
 	header := make([]byte, 4)
-	err := cgm.conn.Receive(header)
+	err := cgm.Receive(header)
 	if err != nil {
 		cgm.SetError(err)
 		return nil
@@ -39,24 +39,24 @@ func (cgm *CGM) receivePacket() []byte {
 		cgm.SetError(fmt.Errorf("unexpected message header % X", header))
 		return nil
 	}
-	ack := Command(header[3])
-	if ack != ACK {
-		cgm.SetError(fmt.Errorf("unexpected response code %v in header % X", ack, header))
+	rc := Command(header[3])
+	if rc != Ack {
+		cgm.SetError(fmt.Errorf("unexpected response code %v in header % X", rc, header))
 		return nil
 	}
-	length := UnmarshalUint16(header[1:3])
+	length := unmarshalUint16(header[1:3])
 	if length < minPacket || length > maxPacket {
 		cgm.SetError(fmt.Errorf("invalid packet length %d in header % X", length, header))
 		return nil
 	}
 	n := length - minPacket
 	data := make([]byte, n+2)
-	err = cgm.conn.Receive(data)
+	err = cgm.Receive(data)
 	if err != nil {
 		cgm.SetError(err)
 		return nil
 	}
-	crc := UnmarshalUint16(data[n:])
+	crc := unmarshalUint16(data[n:])
 	data = data[:n]
 	body := append(header, data...)
 	calc := crc16(body)
@@ -65,7 +65,7 @@ func (cgm *CGM) receivePacket() []byte {
 			Kind:     "packet",
 			Received: crc,
 			Computed: calc,
-			PageType: INVALID_PAGE,
+			PageType: InvalidPage,
 			Data:     body,
 		})
 	}

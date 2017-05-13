@@ -24,9 +24,8 @@ func fromTime(t time.Time) int64 {
 	return int64(u.Sub(dexcomEpoch) / time.Second)
 }
 
-// UnmarshalTime unmarshals a 4-byte array into a time value.
-func UnmarshalTime(v []byte) time.Time {
-	return toTime(int64(UnmarshalUint32(v)))
+func unmarshalTime(v []byte) time.Time {
+	return toTime(int64(unmarshalUint32(v)))
 }
 
 // A Timestamp contains system and display time values.
@@ -35,39 +34,39 @@ type Timestamp struct {
 	DisplayTime time.Time
 }
 
-func (r *Timestamp) Unmarshal(v []byte) error {
-	r.SystemTime = UnmarshalTime(v[0:4])
-	r.DisplayTime = UnmarshalTime(v[4:8])
-	return nil
+func (r *Timestamp) unmarshal(v []byte) {
+	r.SystemTime = unmarshalTime(v[0:4])
+	r.DisplayTime = unmarshalTime(v[4:8])
 }
 
 func displayTime(sys uint32, offset int32) time.Time {
 	return toTime(int64(sys) + int64(offset))
 }
 
-// SYSTEM_TIME = RTC + SYSTEM_TIME_OFFSET
-// DISPLAY_TIME = SYSTEM_TIME + DISPLAY_TIME_OFFSET
-
+// ReadDisplayTime returns the Dexcom receiver's display time.
+//	SystemTime = RTC + SystemTimeOffset
+//	DisplayTime = SystemTime + DisplayTimeOffset
 func (cgm *CGM) ReadDisplayTime() time.Time {
-	v := cgm.Cmd(READ_DISPLAY_TIME_OFFSET)
+	v := cgm.Cmd(ReadDisplayTimeOffset)
 	if cgm.Error() != nil {
 		return time.Time{}
 	}
-	displayOffset := UnmarshalInt32(v)
-	v = cgm.Cmd(READ_SYSTEM_TIME)
+	displayOffset := unmarshalInt32(v)
+	v = cgm.Cmd(ReadSystemTime)
 	if cgm.Error() != nil {
 		return time.Time{}
 	}
-	sysTime := UnmarshalUint32(v)
+	sysTime := unmarshalUint32(v)
 	return displayTime(sysTime, displayOffset)
 }
 
+// SetDisplayTime sets the Dexcom receiver's display time.
 func (cgm *CGM) SetDisplayTime(t time.Time) {
-	v := cgm.Cmd(READ_SYSTEM_TIME)
+	v := cgm.Cmd(ReadSystemTime)
 	if cgm.Error() != nil {
 		return
 	}
-	sysTime := UnmarshalUint32(v)
+	sysTime := unmarshalUint32(v)
 	offset := int32(fromTime(t) - int64(sysTime))
-	cgm.Cmd(WRITE_DISPLAY_TIME_OFFSET, MarshalInt32(offset)...)
+	cgm.Cmd(WriteDisplayTimeOffset, marshalInt32(offset)...)
 }

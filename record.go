@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// nolint
 type (
 	Record struct {
 		Timestamp   Timestamp
@@ -46,10 +47,10 @@ type (
 		Intercept float64
 		Scale     float64
 		Decay     float64
-		Data      []CalibrationData
+		Data      []CalibrationRecord
 	}
 
-	CalibrationData struct {
+	CalibrationRecord struct {
 		TimeEntered time.Time
 		Glucose     int32
 		Raw         int32
@@ -57,6 +58,7 @@ type (
 	}
 )
 
+// Time returns the record's display time.
 func (r *Record) Time() time.Time {
 	return r.Timestamp.DisplayTime
 }
@@ -65,17 +67,17 @@ var recordUnmarshal = map[PageType]struct {
 	length    int
 	unmarshal func(*Record, []byte)
 }{
-	MANUFACTURING_DATA:      {-1, umarshalXMLInfo},
-	FIRMWARE_PARAMETER_DATA: {-1, umarshalXMLInfo},
-	PC_SOFTWARE_PARAMETER:   {-1, umarshalXMLInfo},
-	SENSOR_DATA:             {18, unmarshalSensorInfo},
-	EGV_DATA:                {11, umarshalEGVInfo},
-	CAL_SET:                 {-1, unmarshalCalibrationInfo},
-	INSERTION_TIME:          {13, unmarshalInsertionInfo},
-	METER_DATA:              {14, unmarshalMeterInfo},
+	ManufacturingData: {-1, umarshalXMLInfo},
+	FirmwareData:      {-1, umarshalXMLInfo},
+	SoftwareData:      {-1, umarshalXMLInfo},
+	SensorData:        {18, unmarshalSensorInfo},
+	EGVData:           {11, umarshalEGVInfo},
+	CalibrationData:   {-1, unmarshalCalibrationInfo},
+	InsertionTimeData: {13, unmarshalInsertionInfo},
+	MeterData:         {14, unmarshalMeterInfo},
 }
 
-func (r *Record) Unmarshal(pageType PageType, v []byte) error {
+func (r *Record) unmarshal(pageType PageType, v []byte) error {
 	u, found := recordUnmarshal[pageType]
 	if !found {
 		return fmt.Errorf("unmarshaling of %v records is unimplemented: % X", pageType, v)
@@ -83,37 +85,38 @@ func (r *Record) Unmarshal(pageType PageType, v []byte) error {
 	if u.length > 0 && len(v) != u.length {
 		return fmt.Errorf("wrong length for %d-byte %v record: % X", u.length, pageType, v)
 	}
-	r.Timestamp.Unmarshal(v[0:8])
+	r.Timestamp.unmarshal(v[0:8])
 	u.unmarshal(r, v)
 	return nil
 }
 
 func unmarshalSensorInfo(r *Record, v []byte) {
 	r.Sensor = &SensorInfo{
-		Unfiltered: UnmarshalUint32(v[8:12]),
-		Filtered:   UnmarshalUint32(v[12:16]),
+		Unfiltered: unmarshalUint32(v[8:12]),
+		Filtered:   unmarshalUint32(v[12:16]),
 		RSSI:       int8(v[16]),
 		Unknown:    v[17],
 	}
 }
 
-const (
-	SENSOR_NOT_ACTIVE     SpecialGlucose = 1
-	MINIMAL_DEVIATION     SpecialGlucose = 2
-	NO_ANTENNA            SpecialGlucose = 3
-	SENSOR_NOT_CALIBRATED SpecialGlucose = 5
-	COUNTS_DEVIATION      SpecialGlucose = 6
-	ABSOLUTE_DEVIATION    SpecialGlucose = 9
-	POWER_DEVIATION       SpecialGlucose = 10
-	BAD_RF                SpecialGlucose = 12
-
-	specialLimit = BAD_RF
-)
-
-// SpecialGlucose represents a gucose value used to encode various exceptional conditions.
+// SpecialGlucose represents a glucose value that indicates an exceptional condition.
 type SpecialGlucose uint16
 
 //go:generate stringer -type SpecialGlucose
+
+// Exceptional conditions.
+const (
+	SensorNotActive     SpecialGlucose = 1
+	MinimalDeviation    SpecialGlucose = 2
+	NoAntenna           SpecialGlucose = 3
+	SensorNotCalibrated SpecialGlucose = 5
+	CountDeviation      SpecialGlucose = 6
+	AbsoluteDeviation   SpecialGlucose = 9
+	PowerDeviation      SpecialGlucose = 10
+	BadRF               SpecialGlucose = 12
+
+	specialLimit = BadRF
+)
 
 // IsSpecial checks whether a glucose value falls in the SpecialGlucose range.
 func IsSpecial(glucose uint16) bool {
@@ -125,64 +128,67 @@ type Trend byte
 
 //go:generate stringer -type Trend
 
+// Trend arrows.
 const (
-	UP_UP          Trend = 1
-	UP             Trend = 2
-	UP_45          Trend = 3
-	FLAT           Trend = 4
-	DOWN_45        Trend = 5
-	DOWN           Trend = 6
-	DOWN_DOWN      Trend = 7
-	NOT_COMPUTABLE Trend = 8
-	OUT_OF_RANGE   Trend = 9
+	UpUp          Trend = 1
+	Up            Trend = 2
+	Up45          Trend = 3
+	Flat          Trend = 4
+	Down45        Trend = 5
+	Down          Trend = 6
+	DownDown      Trend = 7
+	NotComputable Trend = 8
+	OutOfRange    Trend = 9
 )
 
 var trendSymbol = map[Trend]string{
-	UP_UP:          "⇈",
-	UP:             "↑",
-	UP_45:          "↗",
-	FLAT:           "→",
-	DOWN_45:        "↘",
-	DOWN:           "↓",
-	DOWN_DOWN:      "⇊",
-	NOT_COMPUTABLE: "⁇",
-	OUT_OF_RANGE:   "⋯",
+	UpUp:          "⇈",
+	Up:            "↑",
+	Up45:          "↗",
+	Flat:          "→",
+	Down45:        "↘",
+	Down:          "↓",
+	DownDown:      "⇊",
+	NotComputable: "⁇",
+	OutOfRange:    "⋯",
 }
 
+// Symbol converts a Trend to a graphical representation.
 func (t Trend) Symbol() string {
 	return trendSymbol[t]
 }
 
+// Constants used to extract EGV, noise, and trend.
 const (
-	EGV_DISPLAY_ONLY     = 1 << 15
-	EGV_VALUE_MASK       = 0x3FF
-	EGV_NOISE_MASK       = 0x70
-	EGV_TREND_ARROW_MASK = 0xF
+	EGVDisplayOnly = 1 << 15
+	EGVValueMask   = 0x3FF
+	EGVNoiseMask   = 0x70
+	EGVTrendMask   = 0xF
 )
 
 func umarshalEGVInfo(r *Record, v []byte) {
-	g := UnmarshalUint16(v[8:10])
+	g := unmarshalUint16(v[8:10])
 	r.EGV = &EGVInfo{
-		Glucose:     g & EGV_VALUE_MASK,
-		DisplayOnly: g&EGV_DISPLAY_ONLY != 0,
-		Noise:       (v[10] & EGV_NOISE_MASK) >> 4,
-		Trend:       Trend(v[10] & EGV_TREND_ARROW_MASK),
+		Glucose:     g & EGVValueMask,
+		DisplayOnly: g&EGVDisplayOnly != 0,
+		Noise:       v[10] & EGVNoiseMask >> 4,
+		Trend:       Trend(v[10] & EGVTrendMask),
 	}
 }
 
 func unmarshalCalibrationInfo(r *Record, v []byte) {
 	cal := &CalibrationInfo{
-		Slope:     UnmarshalFloat64(v[8:16]),
-		Intercept: UnmarshalFloat64(v[16:24]),
-		Scale:     UnmarshalFloat64(v[24:32]),
-		Decay:     UnmarshalFloat64(v[35:43]),
+		Slope:     unmarshalFloat64(v[8:16]),
+		Intercept: unmarshalFloat64(v[16:24]),
+		Scale:     unmarshalFloat64(v[24:32]),
+		Decay:     unmarshalFloat64(v[35:43]),
 	}
 	n := int(v[43])
-	cal.Data = make([]CalibrationData, n)
+	cal.Data = make([]CalibrationRecord, n)
 	v = v[44:]
 	offset := r.Timestamp.DisplayTime.Sub(r.Timestamp.SystemTime)
 	for i := 0; i < n; i++ {
-		cal.Data[i].Unmarshal(v)
+		cal.Data[i].unmarshal(v)
 		cal.Data[i].TimeEntered = cal.Data[i].TimeEntered.Add(offset)
 		cal.Data[i].TimeApplied = cal.Data[i].TimeApplied.Add(offset)
 		v = v[17:]
@@ -190,17 +196,19 @@ func unmarshalCalibrationInfo(r *Record, v []byte) {
 	r.Calibration = cal
 }
 
-func (r *CalibrationData) Unmarshal(v []byte) {
-	r.TimeEntered = UnmarshalTime(v[0:4])
-	r.Glucose = UnmarshalInt32(v[4:8])
-	r.Raw = UnmarshalInt32(v[8:12])
-	r.TimeApplied = UnmarshalTime(v[12:16])
+func (r *CalibrationRecord) unmarshal(v []byte) {
+	r.TimeEntered = unmarshalTime(v[0:4])
+	r.Glucose = unmarshalInt32(v[4:8])
+	r.Raw = unmarshalInt32(v[8:12])
+	r.TimeApplied = unmarshalTime(v[12:16])
 }
 
+// SensorChange represents a sensor change.
 type SensorChange byte
 
 //go:generate stringer -type SensorChange
 
+// Sensor change values.
 const (
 	Stopped SensorChange = 1
 	Started SensorChange = 7
@@ -214,7 +222,7 @@ func unmarshalInsertionInfo(r *Record, v []byte) {
 	t := time.Time{}
 	u := v[8:12]
 	if !bytes.Equal(u, invalidTime) {
-		t = UnmarshalTime(u)
+		t = unmarshalTime(u)
 	}
 	r.Insertion = &InsertionInfo{
 		SystemTime: t,
@@ -224,7 +232,7 @@ func unmarshalInsertionInfo(r *Record, v []byte) {
 
 func unmarshalMeterInfo(r *Record, v []byte) {
 	r.Meter = &MeterInfo{
-		Glucose:   UnmarshalUint16(v[8:10]),
-		MeterTime: UnmarshalTime(v[10:14]),
+		Glucose:   unmarshalUint16(v[8:10]),
+		MeterTime: unmarshalTime(v[10:14]),
 	}
 }

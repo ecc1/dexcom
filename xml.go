@@ -41,7 +41,7 @@ func umarshalXMLInfo(r *Record, v []byte) {
 // ReadFirmwareHeader gets the firmware header from the Dexcom CGM receiver
 // and returns it as XMLInfo.
 func (cgm *CGM) ReadFirmwareHeader() *XMLInfo {
-	v := cgm.Cmd(READ_FIRMWARE_HEADER)
+	v := cgm.Cmd(ReadFirmwareHeader)
 	if cgm.Error() != nil {
 		return nil
 	}

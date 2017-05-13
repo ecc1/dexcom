@@ -9,6 +9,7 @@ const (
 	userTimeLayout = "2006-01-02 15:04:05"
 )
 
+// ReadHistory returns records since the specified time.
 func (cgm *CGM) ReadHistory(pageType PageType, since time.Time) []Record {
 	first, last := cgm.ReadPageRange(pageType)
 	if cgm.Error() != nil {
@@ -28,6 +29,7 @@ func (cgm *CGM) ReadHistory(pageType PageType, since time.Time) []Record {
 	return results
 }
 
+// ReadCount returns a specified number of most recent records.
 func (cgm *CGM) ReadCount(pageType PageType, count int) []Record {
 	first, last := cgm.ReadPageRange(pageType)
 	if cgm.Error() != nil {
@@ -42,8 +44,8 @@ func (cgm *CGM) ReadCount(pageType PageType, count int) []Record {
 	return results
 }
 
-// Merge slices of records that are already in reverse chronological order
-// into a single ordered slice.
+// MergeHistory merges slices of records that are already
+// in reverse chronological order into a single ordered slice.
 func MergeHistory(slices ...[]Record) []Record {
 	n := len(slices)
 	if n == 0 {
@@ -60,7 +62,7 @@ func MergeHistory(slices ...[]Record) []Record {
 	}
 	results := make([]Record, total)
 	index := make([]int, n)
-	for next, _ := range results {
+	for next := range results {
 		// Find slice with latest current value.
 		which := -1
 		max := time.Time{}
@@ -84,12 +86,13 @@ const (
 	glucoseReadingWindow = 10 * time.Second
 )
 
+// GlucoseReadings returns sensor and EGV records since the specified time.
 func (cgm *CGM) GlucoseReadings(since time.Time) []Record {
-	sensor := cgm.ReadHistory(SENSOR_DATA, since)
+	sensor := cgm.ReadHistory(SensorData, since)
 	if cgm.Error() != nil {
 		return nil
 	}
-	egv := cgm.ReadHistory(EGV_DATA, since)
+	egv := cgm.ReadHistory(EGVData, since)
 	if cgm.Error() != nil {
 		return nil
 	}
