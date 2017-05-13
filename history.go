@@ -89,43 +89,20 @@ func (cgm *CGM) GlucoseReadings(since time.Time) []Record {
 	if cgm.Error() != nil {
 		return nil
 	}
-	numSensor := len(sensor)
 	egv := cgm.ReadHistory(EGV_DATA, since)
 	if cgm.Error() != nil {
 		return nil
 	}
-	numEGV := len(egv)
-	var readings []Record
+	readings := make([]Record, 0, len(sensor))
 	i, j := 0, 0
 	for {
 		var r Record
-		if i < numSensor && j < numEGV {
-			sensorTime := sensor[i].Time()
-			egvTime := egv[j].Time()
-			delta := egvTime.Sub(sensorTime)
-			if 0 <= delta && delta < glucoseReadingWindow {
-				// Merge using sensor[i]'s slightly earlier time.
-				r = sensor[i]
-				r.EGV = egv[j].EGV
-				i++
-				j++
-			} else if 0 <= -delta && -delta < glucoseReadingWindow {
-				// Merge using egv[j]'s slightly earlier time.
-				r = egv[j]
-				r.Sensor = sensor[i].Sensor
-				i++
-				j++
-			} else if sensorTime.After(egvTime) {
-				r = sensor[i]
-				i++
-			} else {
-				r = egv[j]
-				j++
-			}
-		} else if i < numSensor {
+		if i < len(sensor) && j < len(egv) {
+			r = chooseRecord(sensor, egv, &i, &j)
+		} else if i < len(sensor) {
 			r = sensor[i]
 			i++
-		} else if j < numEGV {
+		} else if j < len(egv) {
 			r = egv[j]
 			j++
 		} else {
@@ -134,4 +111,35 @@ func (cgm *CGM) GlucoseReadings(since time.Time) []Record {
 		readings = append(readings, r)
 	}
 	return readings
+}
+
+func chooseRecord(sensor, egv []Record, ip, jp *int) Record {
+	i := *ip
+	j := *jp
+	sensorTime := sensor[i].Time()
+	egvTime := egv[j].Time()
+	delta := egvTime.Sub(sensorTime)
+	var r Record
+	if 0 <= delta && delta < glucoseReadingWindow {
+		// Merge using sensor[i]'s slightly earlier time.
+		r = sensor[i]
+		r.EGV = egv[j].EGV
+		i++
+		j++
+	} else if 0 <= -delta && -delta < glucoseReadingWindow {
+		// Merge using egv[j]'s slightly earlier time.
+		r = egv[j]
+		r.Sensor = sensor[i].Sensor
+		i++
+		j++
+	} else if sensorTime.After(egvTime) {
+		r = sensor[i]
+		i++
+	} else {
+		r = egv[j]
+		j++
+	}
+	*ip = i
+	*jp = j
+	return r
 }
