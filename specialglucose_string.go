@@ -5,17 +5,17 @@ package dexcom
 import "fmt"
 
 const (
-	_SpecialGlucose_name_0 = "SENSOR_NOT_ACTIVEMINIMAL_DEVIATIONNO_ANTENNA"
-	_SpecialGlucose_name_1 = "SENSOR_NOT_CALIBRATEDCOUNTS_DEVIATION"
-	_SpecialGlucose_name_2 = "ABSOLUTE_DEVIATIONPOWER_DEVIATION"
-	_SpecialGlucose_name_3 = "BAD_RF"
+	_SpecialGlucose_name_0 = "SensorNotActiveMinimalDeviationNoAntenna"
+	_SpecialGlucose_name_1 = "SensorNotCalibratedCountDeviation"
+	_SpecialGlucose_name_2 = "AbsoluteDeviationPowerDeviation"
+	_SpecialGlucose_name_3 = "BadRF"
 )
 
 var (
-	_SpecialGlucose_index_0 = [...]uint8{0, 17, 34, 44}
-	_SpecialGlucose_index_1 = [...]uint8{0, 21, 37}
-	_SpecialGlucose_index_2 = [...]uint8{0, 18, 33}
-	_SpecialGlucose_index_3 = [...]uint8{0, 6}
+	_SpecialGlucose_index_0 = [...]uint8{0, 15, 31, 40}
+	_SpecialGlucose_index_1 = [...]uint8{0, 19, 33}
+	_SpecialGlucose_index_2 = [...]uint8{0, 17, 31}
+	_SpecialGlucose_index_3 = [...]uint8{0, 5}
 )
 
 func (i SpecialGlucose) String() string {

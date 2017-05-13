@@ -5,13 +5,13 @@ package dexcom
 import "fmt"
 
 const (
-	_PageType_name_0 = "MANUFACTURING_DATAFIRMWARE_PARAMETER_DATAPC_SOFTWARE_PARAMETERSENSOR_DATAEGV_DATACAL_SETDEVIATIONINSERTION_TIMERECEIVER_LOG_DATARECEIVER_ERROR_DATAMETER_DATAUSER_EVENT_DATAUSER_SETTING_DATA"
-	_PageType_name_1 = "INVALID_PAGE"
+	_PageType_name_0 = "ManufacturingDataFirmwareDataSoftwareDataSensorDataEGVDataCalibrationDataDeviationDataInsertionTimeDataReceiverLogDataReceiverErrorDataMeterDataUserEventDataUserSettingData"
+	_PageType_name_1 = "InvalidPage"
 )
 
 var (
-	_PageType_index_0 = [...]uint8{0, 18, 41, 62, 73, 81, 88, 97, 111, 128, 147, 157, 172, 189}
-	_PageType_index_1 = [...]uint8{0, 12}
+	_PageType_index_0 = [...]uint8{0, 17, 29, 41, 51, 58, 73, 86, 103, 118, 135, 144, 157, 172}
+	_PageType_index_1 = [...]uint8{0, 11}
 )
 
 func (i PageType) String() string {

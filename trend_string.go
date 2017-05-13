@@ -4,9 +4,9 @@ package dexcom
 
 import "fmt"
 
-const _Trend_name = "UP_UPUPUP_45FLATDOWN_45DOWNDOWN_DOWNNOT_COMPUTABLEOUT_OF_RANGE"
+const _Trend_name = "UpUpUpUp45FlatDown45DownDownDownNotComputableOutOfRange"
 
-var _Trend_index = [...]uint8{0, 5, 7, 12, 16, 23, 27, 36, 50, 62}
+var _Trend_index = [...]uint8{0, 4, 6, 10, 14, 20, 24, 32, 45, 55}
 
 func (i Trend) String() string {
 	i -= 1

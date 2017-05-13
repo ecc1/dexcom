@@ -5,25 +5,25 @@ package dexcom
 import "fmt"
 
 const (
-	_Command_name_0 = "NULLACKNAKINVALID_COMMANDINVALID_PARAMINCOMPLETE_PACKET_RECEIVEDRECEIVER_ERRORINVALID_MODE"
-	_Command_name_1 = "PINGREAD_FIRMWARE_HEADER"
-	_Command_name_2 = "READ_DATABASE_PARTITION_INFOREAD_DATABASE_PAGE_RANGEREAD_DATABASE_PAGESREAD_DATABASE_PAGE_HEADER"
-	_Command_name_3 = "READ_TRANSMITTER_IDWRITE_TRANSMITTER_IDREAD_LANGUAGEWRITE_LANGUAGEREAD_DISPLAY_TIME_OFFSETWRITE_DISPLAY_TIME_OFFSETREAD_RTCRESET_RECEIVERREAD_BATTERY_LEVELREAD_SYSTEM_TIMEREAD_SYSTEM_TIME_OFFSETWRITE_SYSTEM_TIMEREAD_GLUCOSE_UNITWRITE_GLUCOSE_UNITREAD_BLINDED_MODEWRITE_BLINDED_MODEREAD_CLOCK_MODEWRITE_CLOCK_MODEREAD_DEVICE_MODE"
-	_Command_name_4 = "ERASE_DATABASESHUTDOWN_RECEIVERWRITE_PC_PARAMETERSREAD_BATTERY_STATEREAD_HARDWARE_BOARD_ID"
-	_Command_name_5 = "READ_FIRMWARE_SETTINGSREAD_ENABLE_SETUP_WIZARD_FLAG"
-	_Command_name_6 = "READ_SETUP_WIZARD_STATE"
-	_Command_name_7 = "READ_CHARGER_CURRENT_SETTINGWRITE_CHARGER_CURRENT_SETTING"
+	_Command_name_0 = "NullAckNakInvalidCommandInvalidParamIncompletePacketReceivedReceiverErrorInvalidMode"
+	_Command_name_1 = "PingReadFirmwareHeader"
+	_Command_name_2 = "ReadDatabasePartitionInfoReadDatabasePageRangeReadDatabasePagesReadDatabasePageHeader"
+	_Command_name_3 = "ReadTransmitterIDWriteTransmitterIDReadLanguageWriteLanguageReadDisplayTimeOffsetWriteDisplayTimeOffsetReadRTCResetReceiverReadBatteryLevelReadSystemTimeReadSystemTimeOffsetWriteSystemTimeReadGlucoseUnitsWriteGlucoseUnitsReadBlindModeWriteBlindModeReadClockModeWriteClockModeReadDeviceMode"
+	_Command_name_4 = "EraseDatabaseShutdownReceiverWriteSoftwareParametersReadBatteryStateReadHardwareID"
+	_Command_name_5 = "ReadFirmwareSettingsReadEnableSetupWizardFlag"
+	_Command_name_6 = "ReadSetupWizardState"
+	_Command_name_7 = "ReadChargerCurrentSettingWriteChargerCurrentSetting"
 )
 
 var (
-	_Command_index_0 = [...]uint8{0, 4, 7, 10, 25, 38, 64, 78, 90}
-	_Command_index_1 = [...]uint8{0, 4, 24}
-	_Command_index_2 = [...]uint8{0, 28, 52, 71, 96}
-	_Command_index_3 = [...]uint16{0, 19, 39, 52, 66, 90, 115, 123, 137, 155, 171, 194, 211, 228, 246, 263, 281, 296, 312, 328}
-	_Command_index_4 = [...]uint8{0, 14, 31, 50, 68, 90}
-	_Command_index_5 = [...]uint8{0, 22, 51}
-	_Command_index_6 = [...]uint8{0, 23}
-	_Command_index_7 = [...]uint8{0, 28, 57}
+	_Command_index_0 = [...]uint8{0, 4, 7, 10, 24, 36, 60, 73, 84}
+	_Command_index_1 = [...]uint8{0, 4, 22}
+	_Command_index_2 = [...]uint8{0, 25, 46, 63, 85}
+	_Command_index_3 = [...]uint16{0, 17, 35, 47, 60, 81, 103, 110, 123, 139, 153, 173, 188, 204, 221, 234, 248, 261, 275, 289}
+	_Command_index_4 = [...]uint8{0, 13, 29, 52, 68, 82}
+	_Command_index_5 = [...]uint8{0, 20, 45}
+	_Command_index_6 = [...]uint8{0, 20}
+	_Command_index_7 = [...]uint8{0, 25, 51}
 )
 
 func (i Command) String() string {
