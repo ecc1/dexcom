@@ -13,9 +13,9 @@ import (
 var (
 	pageTypeFlag = flag.Int("p", int(dexcom.EGVData), "`page type` to read")
 	numRecords   = flag.Int("n", 10, "number of `records` to get")
-	all          = flag.Bool("a", false, "get all records")
 )
 
+// nolint: gas
 func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [options]\n", os.Args[0])
