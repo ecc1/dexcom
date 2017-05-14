@@ -4,6 +4,11 @@ import (
 	"time"
 )
 
+const (
+	// UserTimeLayout specifies a consistent, human-readable format for local time.
+	UserTimeLayout = "2006-01-02 15:04:05"
+)
+
 var (
 	dexcomEpoch = time.Date(2009, 1, 1, 0, 0, 0, 0, time.UTC)
 )

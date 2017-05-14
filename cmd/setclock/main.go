@@ -9,10 +9,6 @@ import (
 	"github.com/ecc1/dexcom"
 )
 
-const (
-	userTimeLayout = "2006-01-02 15:04:05"
-)
-
 func usage() {
 	log.Fatalf("Usage: %s YYYY-MM-DD HH:MM:SS (or \"now\")", os.Args[0])
 }
@@ -41,11 +37,11 @@ func main() {
 	if cgm.Error() != nil {
 		log.Fatal(cgm.Error())
 	}
-	fmt.Println(cgm.ReadDisplayTime().Format(userTimeLayout))
+	fmt.Println(cgm.ReadDisplayTime().Format(dexcom.UserTimeLayout))
 }
 
 func parseTime(date string) time.Time {
-	t, err := time.ParseInLocation(userTimeLayout, date, time.Local)
+	t, err := time.ParseInLocation(dexcom.UserTimeLayout, date, time.Local)
 	if err != nil {
 		usage()
 	}

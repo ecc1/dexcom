@@ -12,10 +12,9 @@ import (
 )
 
 const (
-	userTimeLayout = "2006-01-02 15:04:05"
-	csvFormat      = "csv"
-	textFormat     = "text"
-	jsonFormat     = "json"
+	csvFormat  = "csv"
+	textFormat = "text"
+	jsonFormat = "json"
 )
 
 var (
@@ -59,7 +58,7 @@ func main() {
 		*meter = true
 	} else {
 		cutoff = time.Now().Add(-*duration)
-		log.Printf("retrieving records since %s", cutoff.Format(userTimeLayout))
+		log.Printf("retrieving records since %s", cutoff.Format(dexcom.UserTimeLayout))
 	}
 	scans := scanRecords(cgm, cutoff)
 	results := dexcom.MergeHistory(scans...)
@@ -109,7 +108,7 @@ func scanRecords(cgm *dexcom.CGM, cutoff time.Time) [][]dexcom.Record {
 }
 
 func printRecord(r dexcom.Record) {
-	t := r.Time().Format(userTimeLayout)
+	t := r.Time().Format(dexcom.UserTimeLayout)
 	printGlucose(t, r.EGV, r.Sensor)
 	printCalibration(t, r.Calibration)
 	printMeter(t, r.Meter)
@@ -145,13 +144,13 @@ func printCalibration(t string, cal *dexcom.CalibrationInfo) {
 	case csvFormat:
 		fmt.Printf("%s,%s,,,%g,%g,%g,%g\n", t, "C", cal.Slope, cal.Intercept, cal.Scale, cal.Decay)
 		for _, d := range cal.Data {
-			t = d.TimeEntered.Format(userTimeLayout)
+			t = d.TimeEntered.Format(dexcom.UserTimeLayout)
 			fmt.Printf("%s,%s,%d,%d\n", t, "D", d.Glucose, d.Raw)
 		}
 	case textFormat:
 		fmt.Printf("%s  %-5s  %g  %g  %g  %g\n", t, "CAL", cal.Slope, cal.Intercept, cal.Scale, cal.Decay)
 		for _, d := range cal.Data {
-			t = d.TimeEntered.Format(userTimeLayout)
+			t = d.TimeEntered.Format(dexcom.UserTimeLayout)
 			fmt.Printf("%s  %-5s  %3d  %6d\n", t, "DATA", d.Glucose, d.Raw)
 		}
 	}
