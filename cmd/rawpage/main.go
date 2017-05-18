@@ -1,19 +1,16 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/ecc1/dexcom"
 )
 
 var (
-	all          = flag.Bool("a", false, "get all records")
-	duration     = flag.Duration("d", time.Hour, "get `duration` worth of previous records")
+	pageNumber   = flag.Int("n", -1, "`page` number to read; -1 for most recent")
 	pageTypeFlag = flag.Int("p", int(dexcom.EGVData), "page `type` to read")
 )
 
@@ -37,25 +34,18 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	var cutoff time.Time
 	cgm := dexcom.Open()
+	pageNum := *pageNumber
+	if pageNum == -1 {
+		_, pageNum = cgm.ReadPageRange(pageType)
+	}
 	if cgm.Error() != nil {
 		log.Fatal(cgm.Error())
 	}
-	if *all {
-		log.Printf("retrieving entire record history")
-	} else {
-		cutoff = time.Now().Add(-*duration)
-		log.Printf("retrieving records since %s", cutoff.Format(dexcom.UserTimeLayout))
-	}
-	results := cgm.ReadHistory(pageType, cutoff)
+	log.Printf("reading %v page %d", pageType, pageNum)
+	v := cgm.ReadPage(pageType, pageNum)
 	if cgm.Error() != nil {
 		log.Fatal(cgm.Error())
 	}
-	e := json.NewEncoder(os.Stdout)
-	e.SetIndent("", "  ")
-	err := e.Encode(results)
-	if err != nil {
-		log.Fatal(err)
-	}
+	fmt.Printf("% X\n", v)
 }

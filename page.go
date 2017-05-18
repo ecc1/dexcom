@@ -42,7 +42,7 @@ func (cgm *CGM) ReadPageRange(pageType PageType) (int, int) {
 	return int(unmarshalInt32(v[:4])), int(unmarshalInt32(v[4:]))
 }
 
-// RecordFunc represents a function that ReadPage applies
+// RecordFunc represents a function that ReadRecords applies
 // to each record that it reads, until it returns true or an error.
 type RecordFunc func(Record) (bool, error)
 
@@ -62,15 +62,20 @@ func (e CRCError) Error() string {
 	return fmt.Sprintf("bad %s CRC (received %02X, computed %02X) for %v page %d; data = % X", e.Kind, e.Received, e.Computed, e.PageType, e.PageNumber, e.Data)
 }
 
-// ReadPage reads the specified page and applies recordFn to each record.
-// ReadPage returns true when an error is encountered or an invocation of
-// recordFn returns true, otherwise it returns false.
-func (cgm *CGM) ReadPage(pageType PageType, pageNumber int, recordFn RecordFunc) bool {
+// ReadPage reads the specified page.
+func (cgm *CGM) ReadPage(pageType PageType, pageNumber int) []byte {
 	buf := bytes.Buffer{}
 	buf.WriteByte(byte(pageType))
 	buf.Write(marshalInt32(int32(pageNumber)))
 	buf.WriteByte(1)
-	v := cgm.Cmd(ReadDatabasePages, buf.Bytes()...)
+	return cgm.Cmd(ReadDatabasePages, buf.Bytes()...)
+}
+
+// ReadRecords reads the specified page and applies recordFn to each record.
+// ReadRecords returns true when an error is encountered or an invocation of
+// recordFn returns true, otherwise it returns false.
+func (cgm *CGM) ReadRecords(pageType PageType, pageNumber int, recordFn RecordFunc) bool {
+	v := cgm.ReadPage(pageType, pageNumber)
 	if cgm.Error() != nil {
 		return true
 	}
@@ -166,21 +171,12 @@ func (cgm *CGM) processRecords(pageType PageType, pageNumber int, recordFn Recor
 	return false
 }
 
-// ReadRecords applies recordFn to each record of the specified page type.
-func (cgm *CGM) ReadRecords(pageType PageType, recordFn RecordFunc) {
-	first, last := cgm.ReadPageRange(pageType)
-	if cgm.Error() != nil {
-		return
-	}
-	cgm.IterRecords(pageType, first, last, recordFn)
-}
-
 // IterRecords reads the specified page range and applies recordFn to each
 // record in each page.  Pages are visited in reverse order to facilitate
 // scanning for recent records.
 func (cgm *CGM) IterRecords(pageType PageType, firstPage, lastPage int, recordFn RecordFunc) {
 	for n := lastPage; n >= firstPage; n-- {
-		done := cgm.ReadPage(pageType, n, recordFn)
+		done := cgm.ReadRecords(pageType, n, recordFn)
 		if cgm.Error() != nil || done {
 			return
 		}

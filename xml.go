@@ -3,7 +3,6 @@ package dexcom
 import (
 	"bytes"
 	"encoding/xml"
-	"fmt"
 )
 
 // XMLInfo maps attribute names to values.
@@ -51,16 +50,10 @@ func (cgm *CGM) ReadFirmwareHeader() *XMLInfo {
 // ReadXMLRecord gets the given XML record type from the Dexcom CGM receiver.
 func (cgm *CGM) ReadXMLRecord(pageType PageType) Record {
 	x := Record{}
-	seen := false
 	proc := func(r Record) (bool, error) {
-		// There should only be a single page, containing one record.
-		if seen {
-			return true, fmt.Errorf("unexpected XML record in %v page", pageType)
-		}
 		x = r
-		seen = true
-		return false, nil
+		return true, nil
 	}
-	cgm.ReadRecords(pageType, proc)
+	cgm.IterRecords(pageType, 0, 0, proc)
 	return x
 }
