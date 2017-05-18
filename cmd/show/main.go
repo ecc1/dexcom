@@ -14,6 +14,7 @@ import (
 var (
 	all          = flag.Bool("a", false, "get all records")
 	duration     = flag.Duration("d", time.Hour, "get `duration` worth of previous records")
+	pageNumber   = flag.Int("n", -1, "`page` number to read")
 	pageTypeFlag = flag.Int("p", int(dexcom.EGVData), "page `type` to read")
 )
 
@@ -37,18 +38,23 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	var cutoff time.Time
 	cgm := dexcom.Open()
 	if cgm.Error() != nil {
 		log.Fatal(cgm.Error())
 	}
-	if *all {
-		log.Printf("retrieving entire record history")
+	var results []dexcom.Record
+	if *pageNumber != -1 {
+		results = cgm.ReadRecords(pageType, *pageNumber)
 	} else {
-		cutoff = time.Now().Add(-*duration)
-		log.Printf("retrieving records since %s", cutoff.Format(dexcom.UserTimeLayout))
+		var cutoff time.Time
+		if *all {
+			log.Printf("retrieving entire record history")
+		} else {
+			cutoff = time.Now().Add(-*duration)
+			log.Printf("retrieving records since %s", cutoff.Format(dexcom.UserTimeLayout))
+		}
+		results = cgm.ReadHistory(pageType, cutoff)
 	}
-	results := cgm.ReadHistory(pageType, cutoff)
 	if cgm.Error() != nil {
 		log.Fatal(cgm.Error())
 	}
