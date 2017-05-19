@@ -16,6 +16,7 @@ var (
 	duration     = flag.Duration("d", time.Hour, "get `duration` worth of previous records")
 	pageNumber   = flag.Int("n", -1, "`page` number to read")
 	pageTypeFlag = flag.Int("p", int(dexcom.EGVData), "page `type` to read")
+	rawFlag      = flag.Bool("r", false, "show raw record data")
 )
 
 // nolint
@@ -44,6 +45,10 @@ func main() {
 	}
 	var results []dexcom.Record
 	if *pageNumber != -1 {
+		if *rawFlag {
+			rawRecords(cgm, pageType, *pageNumber)
+			return
+		}
 		results = cgm.ReadRecords(pageType, *pageNumber)
 	} else {
 		var cutoff time.Time
@@ -58,6 +63,20 @@ func main() {
 	if cgm.Error() != nil {
 		log.Fatal(cgm.Error())
 	}
+	printResults(results)
+}
+
+func rawRecords(cgm *dexcom.CGM, pageType dexcom.PageType, pageNum int) {
+	data := cgm.ReadRawRecords(pageType, pageNum)
+	if cgm.Error() != nil {
+		log.Fatal(cgm.Error())
+	}
+	for _, v := range data {
+		fmt.Printf("[% X]\n", v)
+	}
+}
+
+func printResults(results []dexcom.Record) {
 	e := json.NewEncoder(os.Stdout)
 	e.SetIndent("", "  ")
 	err := e.Encode(results)

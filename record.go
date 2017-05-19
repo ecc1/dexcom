@@ -63,30 +63,24 @@ func (r *Record) Time() time.Time {
 	return r.Timestamp.DisplayTime
 }
 
-var recordUnmarshal = map[PageType]struct {
-	length    int
-	unmarshal func(*Record, []byte)
-}{
-	ManufacturingData: {-1, umarshalXMLInfo},
-	FirmwareData:      {-1, umarshalXMLInfo},
-	SoftwareData:      {-1, umarshalXMLInfo},
-	SensorData:        {18, unmarshalSensorInfo},
-	EGVData:           {11, umarshalEGVInfo},
-	CalibrationData:   {-1, unmarshalCalibrationInfo},
-	InsertionTimeData: {13, unmarshalInsertionInfo},
-	MeterData:         {14, unmarshalMeterInfo},
+var recordUnmarshal = map[PageType]func(*Record, []byte){
+	ManufacturingData: umarshalXMLInfo,
+	FirmwareData:      umarshalXMLInfo,
+	SoftwareData:      umarshalXMLInfo,
+	SensorData:        unmarshalSensorInfo,
+	EGVData:           umarshalEGVInfo,
+	CalibrationData:   unmarshalCalibrationInfo,
+	InsertionTimeData: unmarshalInsertionInfo,
+	MeterData:         unmarshalMeterInfo,
 }
 
 func (r *Record) unmarshal(pageType PageType, v []byte) error {
-	u, found := recordUnmarshal[pageType]
+	f, found := recordUnmarshal[pageType]
 	if !found {
 		return fmt.Errorf("unmarshaling of %v records is unimplemented: % X", pageType, v)
 	}
-	if u.length > 0 && len(v) != u.length {
-		return fmt.Errorf("wrong length for %d-byte %v record: % X", u.length, pageType, v)
-	}
 	r.Timestamp.unmarshal(v[0:8])
-	u.unmarshal(r, v)
+	f(r, v)
 	return nil
 }
 
