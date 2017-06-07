@@ -2,6 +2,7 @@ package dexcom
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 )
 
@@ -55,10 +56,6 @@ func (cgm *CGM) ReadPageRange(pageType PageType) (int, int) {
 	return int(unmarshalInt32(v[:4])), int(unmarshalInt32(v[4:]))
 }
 
-// RecordFunc represents a function that IterRecords applies
-// to each record that it reads, until it returns true or an error.
-type RecordFunc func(Record) (bool, error)
-
 // CRCError indicates that a CRC error was detected.
 type CRCError struct {
 	Kind               string
@@ -84,26 +81,32 @@ func (cgm *CGM) ReadPage(pageType PageType, pageNumber int) []byte {
 	return cgm.Cmd(ReadDatabasePages, buf.Bytes()...)
 }
 
+type pageInfo struct {
+	Type    PageType
+	Number  int
+	Records [][]byte
+}
+
 // ReadRawRecords reads the specified page and returns its records as raw byte slices.
 func (cgm *CGM) ReadRawRecords(pageType PageType, pageNumber int) [][]byte {
 	v := cgm.ReadPage(pageType, pageNumber)
 	if cgm.Error() != nil {
 		return nil
 	}
-	p, n, data, err := unmarshalPage(v)
+	page, err := unmarshalPage(v)
 	if err != nil {
-		cgm.SetError(fmt.Errorf("%v page %d: %v", pageType, pageNumber, err))
-		return nil
+		if page == nil {
+			cgm.SetError(err)
+			return nil
+		}
+		err = fmt.Errorf("%v page %d: %v", page.Type, page.Number, err)
+	} else if page.Type != pageType {
+		err = fmt.Errorf("%v page %d: unexpected page type (%d)", pageType, pageNumber, page.Type)
+	} else if page.Number != pageNumber {
+		err = fmt.Errorf("%v page %d: unexpected page number (%d)", pageType, pageNumber, page.Number)
 	}
-	if p != pageType {
-		cgm.SetError(fmt.Errorf("%v page %d: unexpected page type (%d)", pageType, pageNumber, p))
-		return nil
-	}
-	if n != pageNumber {
-		cgm.SetError(fmt.Errorf("%v page %d: unexpected page number (%d)", pageType, pageNumber, n))
-		return nil
-	}
-	return data
+	cgm.SetError(err)
+	return page.Records
 }
 
 // ReadRecords reads the specified page and returns its records.
@@ -115,49 +118,45 @@ func (cgm *CGM) ReadRecords(pageType PageType, pageNumber int) []Record {
 	records, err := unmarshalRecords(pageType, data)
 	if err != nil {
 		cgm.SetError(fmt.Errorf("%v page %d: %v", pageType, pageNumber, err))
-		return nil
 	}
 	return records
 }
 
-// unmarshalPage returns the page type, page number, and raw records in the given page data.
-func unmarshalPage(v []byte) (pageType PageType, pageNumber int, records [][]byte, err error) {
+// unmarshalPage validates the CRC of the given page data and
+// uses the page type to slice the data into raw records.
+func unmarshalPage(v []byte) (*pageInfo, error) {
 	const headerSize = 28
 	if len(v) < headerSize {
-		err = fmt.Errorf("invalid page length (%d)", len(v))
-		return
+		return nil, fmt.Errorf("invalid page length (%d)", len(v))
 	}
 	crc := unmarshalUint16(v[headerSize-2 : headerSize])
 	calc := crc16(v[:headerSize-2])
 	if crc != calc {
-		err = CRCError{
-			Kind:       "page",
-			Received:   crc,
-			Computed:   calc,
-			PageType:   pageType,
-			PageNumber: pageNumber,
-			Data:       v,
+		return nil, CRCError{
+			Kind:     "page",
+			Received: crc,
+			Computed: calc,
+			Data:     v,
 		}
-		return
 	}
 	// firstIndex := int(unmarshalInt32(v[0:4]))
 	numRecords := int(unmarshalInt32(v[4:8]))
-	pageType = PageType(v[8])
+	pageType := PageType(v[8])
 	// rev := v[9]
-	pageNumber = int(unmarshalInt32(v[10:14]))
+	pageNumber := int(unmarshalInt32(v[10:14]))
 	// r1 := unmarshalInt32(v[14:18])
 	// r2 := unmarshalInt32(v[18:22])
 	// r3 := unmarshalInt32(v[22:26])
+	page := pageInfo{Type: pageType, Number: pageNumber}
 	v = v[headerSize:]
 	recordLen := recordLength[pageType]
 	if recordLen == 0 {
 		if numRecords != 1 {
-			err = fmt.Errorf("unexpected number of records (%d)", numRecords)
-			return
+			return &page, fmt.Errorf("unexpected number of records (%d)", numRecords)
 		}
 		recordLen = len(v)
 	}
-	records = make([][]byte, 0, numRecords)
+	page.Records = make([][]byte, 0, numRecords)
 	// Collect records in reverse chronological order.
 	for i := numRecords - 1; i >= 0; i-- {
 		rec := v[i*recordLen : (i+1)*recordLen]
@@ -165,7 +164,7 @@ func unmarshalPage(v []byte) (pageType PageType, pageNumber int, records [][]byt
 		rec = rec[:recordLen-2]
 		calc := crc16(rec)
 		if crc != calc {
-			err = CRCError{
+			return &page, CRCError{
 				Kind:       "record",
 				Received:   crc,
 				Computed:   calc,
@@ -173,25 +172,32 @@ func unmarshalPage(v []byte) (pageType PageType, pageNumber int, records [][]byt
 				PageNumber: pageNumber,
 				Data:       rec,
 			}
-			return
 		}
-		records = append(records, rec)
+		page.Records = append(page.Records, rec)
 	}
-	return
+	return &page, nil
 }
 
 func unmarshalRecords(pageType PageType, data [][]byte) ([]Record, error) {
 	records := make([]Record, 0, len(data))
+	var err error
 	for _, rec := range data {
 		r := Record{}
-		err := r.unmarshal(pageType, rec)
+		err = r.unmarshal(pageType, rec)
 		if err != nil {
-			return records, err
+			break
 		}
 		records = append(records, r)
 	}
-	return records, nil
+	return records, err
 }
+
+// RecordFunc represents a function that IterRecords applies to each record.
+type RecordFunc func(Record) error
+
+// IterationDone can be returned by a RecordFunc to indicate that
+// iteration is complete and no further records need to be processed.
+var IterationDone = errors.New("iteration done") // nolint
 
 // IterRecords reads the specified page range and applies recordFn to each
 // record in each page.  Pages are visited in reverse order to facilitate
@@ -203,13 +209,11 @@ func (cgm *CGM) IterRecords(pageType PageType, firstPage, lastPage int, recordFn
 			return
 		}
 		for _, r := range records {
-			done, err := recordFn(r)
+			err := recordFn(r)
 			if err != nil {
-				cgm.SetError(fmt.Errorf("%v page %d: %v", pageType, n, err))
-
-				return
-			}
-			if done {
+				if err != IterationDone {
+					cgm.SetError(fmt.Errorf("%v page %d: %v", pageType, n, err))
+				}
 				return
 			}
 		}

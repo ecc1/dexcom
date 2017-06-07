@@ -12,14 +12,14 @@ func (cgm *CGM) ReadHistory(pageType PageType, since time.Time) []Record {
 		return nil
 	}
 	var results []Record
-	proc := func(r Record) (bool, error) {
+	proc := func(r Record) error {
 		t := r.Time()
 		if t.Before(since) {
 			log.Printf("stopping %v scan at %s", pageType, t.Format(UserTimeLayout))
-			return true, nil
+			return IterationDone
 		}
 		results = append(results, r)
-		return false, nil
+		return nil
 	}
 	cgm.IterRecords(pageType, first, last, proc)
 	return results
@@ -32,9 +32,12 @@ func (cgm *CGM) ReadCount(pageType PageType, count int) []Record {
 		return nil
 	}
 	var results []Record
-	proc := func(r Record) (bool, error) {
+	proc := func(r Record) error {
 		results = append(results, r)
-		return len(results) == count, nil
+		if len(results) == count {
+			return IterationDone
+		}
+		return nil
 	}
 	cgm.IterRecords(pageType, first, last, proc)
 	return results

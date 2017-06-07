@@ -50,9 +50,9 @@ func (cgm *CGM) ReadFirmwareHeader() *XMLInfo {
 // ReadXMLRecord gets the given XML record type from the Dexcom CGM receiver.
 func (cgm *CGM) ReadXMLRecord(pageType PageType) Record {
 	x := Record{}
-	proc := func(r Record) (bool, error) {
+	proc := func(r Record) error {
 		x = r
-		return true, nil
+		return IterationDone
 	}
 	cgm.IterRecords(pageType, 0, 0, proc)
 	return x
