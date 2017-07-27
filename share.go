@@ -117,14 +117,15 @@ func initAuthCode() error {
 		return nil
 	}
 	id := os.Getenv(authEnvVar)
-	if len(id) == 0 {
+	switch len(id) {
+	case 10:
+		authCode = []byte(id + "000000")
+		return nil
+	case 0:
 		return fmt.Errorf("%s environment variable is not set", authEnvVar)
-	}
-	if len(id) != 10 {
+	default:
 		return fmt.Errorf("%s environment variable must be 2 letters followed by 8 digits", authEnvVar)
 	}
-	authCode = []byte(id + "000000")
-	return nil
 }
 
 func authenticate(device ble.Device, reauth bool) error {
