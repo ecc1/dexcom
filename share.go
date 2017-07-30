@@ -17,8 +17,18 @@ type bleConn struct {
 }
 
 const (
-	// maximum size of writes to GATT characteristics
-	gattMTU = 20
+	authEnvVar   = "DEXCOM_CGM_ID"
+	receiverName = "DEXCOMRX"
+)
+
+var (
+	receiverService = dexcomUUID(0xa0b1)
+	authentication  = dexcomUUID(0xacac)
+	heartbeat       = dexcomUUID(0x2b18)
+	sendData        = dexcomUUID(0xb20a)
+	receiveData     = dexcomUUID(0xb20b)
+
+	authCode []byte
 )
 
 // Send writes data over the BLE connection.
@@ -30,8 +40,8 @@ func (conn *bleConn) Send(data []byte) error {
 		if n == 0 {
 			return nil
 		}
-		if n > gattMTU {
-			n = gattMTU
+		if n > ble.GATTMTU {
+			n = ble.GATTMTU
 		}
 		err := conn.tx.WriteValue(data[:n])
 		if err != nil {
@@ -54,11 +64,6 @@ func (conn *bleConn) Receive(data []byte) error {
 	}
 	return nil
 }
-
-var (
-	receiverName    = "DEXCOMRX"
-	receiverService = dexcomUUID(0xa0b1)
-)
 
 func connect(conn *ble.Connection) error {
 	device, err := findDevice(conn)
@@ -106,12 +111,6 @@ func findDevice(conn *ble.Connection) (ble.Device, error) {
 	return conn.Discover(10*time.Second, receiverService)
 }
 
-var (
-	authentication = dexcomUUID(0xacac)
-	authEnvVar     = "DEXCOM_CGM_ID"
-	authCode       []byte
-)
-
 func initAuthCode() error {
 	if len(authCode) != 0 {
 		return nil
@@ -154,12 +153,6 @@ func authenticate(device ble.Device, reauth bool) error {
 	log.Printf("%s: authenticated", device.Name())
 	return nil
 }
-
-var (
-	heartbeat   = dexcomUUID(0x2b18)
-	sendData    = dexcomUUID(0xb20a)
-	receiveData = dexcomUUID(0xb20b)
-)
 
 // OpenBLE makes a BLE connection to a Dexcom G4 Share receiver.
 func OpenBLE() (Connection, error) {
