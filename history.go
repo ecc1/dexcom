@@ -3,10 +3,12 @@ package dexcom
 import (
 	"log"
 	"time"
+
+	"github.com/ecc1/timeseries"
 )
 
 // ReadHistory returns records since the specified time.
-func (cgm *CGM) ReadHistory(pageType PageType, since time.Time) []Record {
+func (cgm *CGM) ReadHistory(pageType PageType, since time.Time) Records {
 	first, last := cgm.ReadPageRange(pageType)
 	if cgm.Error() != nil {
 		return nil
@@ -26,12 +28,12 @@ func (cgm *CGM) ReadHistory(pageType PageType, since time.Time) []Record {
 }
 
 // ReadCount returns a specified number of most recent records.
-func (cgm *CGM) ReadCount(pageType PageType, count int) []Record {
+func (cgm *CGM) ReadCount(pageType PageType, count int) Records {
 	first, last := cgm.ReadPageRange(pageType)
 	if cgm.Error() != nil {
 		return nil
 	}
-	var results []Record
+	results := make([]Record, 0, count)
 	proc := func(r Record) error {
 		results = append(results, r)
 		if len(results) == count {
@@ -45,7 +47,7 @@ func (cgm *CGM) ReadCount(pageType PageType, count int) []Record {
 
 // MergeHistory merges slices of records that are already
 // in reverse chronological order into a single ordered slice.
-func MergeHistory(slices ...[]Record) []Record {
+func MergeHistory(slices ...Records) Records {
 	n := len(slices)
 	if n == 0 {
 		return nil
@@ -85,7 +87,7 @@ const (
 	glucoseReadingWindow = 10 * time.Second
 )
 
-// GlucoseReadings returns sensor and EGV records since the specified time.
+// GlucoseReadings returns BG records since the specified time.
 func (cgm *CGM) GlucoseReadings(since time.Time) []Record {
 	sensor := cgm.ReadHistory(SensorData, since)
 	if cgm.Error() != nil {
@@ -95,53 +97,23 @@ func (cgm *CGM) GlucoseReadings(since time.Time) []Record {
 	if cgm.Error() != nil {
 		return nil
 	}
-	readings := make([]Record, 0, len(sensor))
-	i, j := 0, 0
-	for {
-		var r Record
-		if i < len(sensor) && j < len(egv) {
-			r = chooseRecord(sensor, egv, &i, &j)
-		} else if i < len(sensor) {
-			r = sensor[i]
-			i++
-		} else if j < len(egv) {
-			r = egv[j]
-			j++
-		} else {
-			break
+	aligned := timeseries.Align(sensor, egv, glucoseReadingWindow)
+	readings := make([]Record, len(aligned))
+	for i, c := range aligned {
+		var bg BGInfo
+		if c.Two != -1 {
+			r := egv[c.Two]
+			readings[i].Timestamp = r.Timestamp
+			bg.EGV = r.Info.(EGVInfo)
 		}
-		readings = append(readings, r)
+		// Check for sensor info last so that its slightly
+		// earlier timestamp will be used, if present.
+		if c.One != -1 {
+			r := sensor[c.One]
+			readings[i].Timestamp = r.Timestamp
+			bg.Sensor = r.Info.(SensorInfo)
+		}
+		readings[i].Info = bg
 	}
 	return readings
-}
-
-func chooseRecord(sensor, egv []Record, ip, jp *int) Record {
-	i := *ip
-	j := *jp
-	sensorTime := sensor[i].Time()
-	egvTime := egv[j].Time()
-	delta := egvTime.Sub(sensorTime)
-	var r Record
-	if 0 <= delta && delta < glucoseReadingWindow {
-		// Merge using sensor[i]'s slightly earlier time.
-		r = sensor[i]
-		r.EGV = egv[j].EGV
-		i++
-		j++
-	} else if 0 <= -delta && -delta < glucoseReadingWindow {
-		// Merge using egv[j]'s slightly earlier time.
-		r = egv[j]
-		r.Sensor = sensor[i].Sensor
-		i++
-		j++
-	} else if sensorTime.After(egvTime) {
-		r = sensor[i]
-		i++
-	} else {
-		r = egv[j]
-		j++
-	}
-	*ip = i
-	*jp = j
-	return r
 }

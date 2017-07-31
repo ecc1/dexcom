@@ -10,6 +10,24 @@ import (
 // with multiple attributes, so a tree structure is not required.
 type XMLInfo map[string]string
 
+func umarshalXMLInfo(r *Record, v []byte) {
+	v = v[8:]
+	i := bytes.IndexByte(v, 0x00)
+	if i != -1 {
+		v = v[:i]
+	}
+	r.Info = umarshalXMLBytes(v)
+}
+
+func umarshalXMLBytes(v []byte) XMLInfo {
+	m := make(XMLInfo)
+	err := xml.Unmarshal(v, &m)
+	if err != nil {
+		m["InvalidXML"] = string(v)
+	}
+	return m
+}
+
 // UnmarshalXML is called by xml.Unmarshal.
 func (ptr *XMLInfo) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	m := *ptr
@@ -19,27 +37,9 @@ func (ptr *XMLInfo) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	return d.Skip()
 }
 
-func umarshalXMLBytes(v []byte) *XMLInfo {
-	m := make(XMLInfo)
-	err := xml.Unmarshal(v, &m)
-	if err != nil {
-		m["InvalidXML"] = string(v)
-	}
-	return &m
-}
-
-func umarshalXMLInfo(r *Record, v []byte) {
-	v = v[8:]
-	i := bytes.IndexByte(v, 0x00)
-	if i != -1 {
-		v = v[:i]
-	}
-	r.XML = umarshalXMLBytes(v)
-}
-
 // ReadFirmwareHeader gets the firmware header from the Dexcom CGM receiver
 // and returns it as XMLInfo.
-func (cgm *CGM) ReadFirmwareHeader() *XMLInfo {
+func (cgm *CGM) ReadFirmwareHeader() XMLInfo {
 	v := cgm.Cmd(ReadFirmwareHeader)
 	if cgm.Error() != nil {
 		return nil

@@ -15,33 +15,28 @@ func (r Record) NightscoutEntry() nightscout.Entry {
 		DateString: t.Format(nightscout.DateStringLayout),
 		Device:     nightscout.Hostname(),
 	}
-	if r.Calibration != nil {
+	switch info := r.Info.(type) {
+	case CalibrationInfo:
 		e.Type = "cal"
-		e.Slope = r.Calibration.Slope
-		e.Intercept = r.Calibration.Intercept
-		e.Scale = r.Calibration.Scale
+		e.Slope = info.Slope
+		e.Intercept = info.Intercept
+		e.Scale = info.Scale
 		return e
-	}
-	if r.Meter != nil {
+	case MeterInfo:
 		e.Type = "mbg"
-		e.MBG = int(r.Meter.Glucose)
+		e.MBG = int(info.Glucose)
 		return e
-	}
-	if r.Sensor != nil || r.EGV != nil {
+	case BGInfo:
 		e.Type = "sgv"
-		if r.Sensor != nil {
-			e.Unfiltered = int(r.Sensor.Unfiltered)
-			e.Filtered = int(r.Sensor.Filtered)
-			e.RSSI = int(r.Sensor.RSSI)
-		}
-		if r.EGV != nil {
-			e.SGV = int(r.EGV.Glucose)
-			e.Direction = nightscoutTrend(r.EGV.Trend)
-			e.Noise = int(r.EGV.Noise)
-		}
+		e.Unfiltered = int(info.Sensor.Unfiltered)
+		e.Filtered = int(info.Sensor.Filtered)
+		e.RSSI = int(info.Sensor.RSSI)
+		e.SGV = int(info.EGV.Glucose)
+		e.Direction = nightscoutTrend(info.EGV.Trend)
+		e.Noise = int(info.EGV.Noise)
 		return e
 	}
-	panic(fmt.Sprintf("NightscoutEntry(%+v}", r))
+	panic(fmt.Sprintf("NightscoutEntry %+v", r))
 }
 
 func nightscoutTrend(t Trend) string {
@@ -71,7 +66,7 @@ const (
 
 // MissingNightscoutEntries returns nightscout.Entry values
 // for those records that fall within the given gaps.
-func MissingNightscoutEntries(records []Record, gaps []nightscout.Gap) []nightscout.Entry {
+func MissingNightscoutEntries(records Records, gaps []nightscout.Gap) []nightscout.Entry {
 	var missing []nightscout.Entry
 	i := 0
 	for _, g := range gaps {

@@ -79,13 +79,13 @@ func main() {
 	}
 }
 
-func scanRecords(cgm *dexcom.CGM, cutoff time.Time) [][]dexcom.Record {
-	var scans [][]dexcom.Record
+func scanRecords(cgm *dexcom.CGM, cutoff time.Time) []dexcom.Records {
+	var scans []dexcom.Records
 	for _, t := range recordTypes {
 		if !*t.flag {
 			continue
 		}
-		var v []dexcom.Record
+		var v dexcom.Records
 		// Special case when both EGV and sensor records are requested.
 		if t.page == dexcom.EGVData && *sensor {
 			v = cgm.GlucoseReadings(cutoff)
@@ -109,37 +109,46 @@ func scanRecords(cgm *dexcom.CGM, cutoff time.Time) [][]dexcom.Record {
 
 func printRecord(r dexcom.Record) {
 	t := r.Time().Format(dexcom.UserTimeLayout)
-	printGlucose(t, r.EGV, r.Sensor)
-	printCalibration(t, r.Calibration)
-	printMeter(t, r.Meter)
+	switch info := r.Info.(type) {
+	case dexcom.SensorInfo:
+		printSensor(t, info)
+	case dexcom.EGVInfo:
+		printEGV(t, info)
+	case dexcom.BGInfo:
+		printBG(t, info)
+	case dexcom.CalibrationInfo:
+		printCalibration(t, info)
+	case dexcom.MeterInfo:
+		printMeter(t, info)
+	default:
+		panic(fmt.Sprintf("unexpected record %+v", r))
+	}
 }
 
-func printGlucose(t string, e *dexcom.EGVInfo, s *dexcom.SensorInfo) {
-	if e == nil && s == nil {
-		return
-	}
-	glucose, noise, unfiltered, filtered, rssi := "", "", "", "", ""
-	if e != nil {
-		glucose = fmt.Sprintf("%d", e.Glucose)
-		noise = fmt.Sprintf("%d", e.Noise)
-	}
-	if s != nil {
-		unfiltered = fmt.Sprintf("%d", s.Unfiltered)
-		filtered = fmt.Sprintf("%d", s.Filtered)
-		rssi = fmt.Sprintf("%d", s.RSSI)
-	}
+func printSensor(t string, s dexcom.SensorInfo) {
 	switch *format {
 	case csvFormat:
-		fmt.Printf("%s,%s,%s,%s\n", t, "G", glucose, unfiltered)
+		fmt.Printf("%s,G,,%d\n", t, s.Unfiltered)
 	case textFormat:
-		fmt.Printf("%s  %3s  %3s  %6s  %6s  %3s\n", t, glucose, noise, unfiltered, filtered, rssi)
+		fmt.Printf("%s            %6d  %6d  %3d\n", t, s.Unfiltered, s.Filtered, s.RSSI)
 	}
 }
 
-func printCalibration(t string, cal *dexcom.CalibrationInfo) {
-	if cal == nil {
-		return
+func printEGV(t string, e dexcom.EGVInfo) {
+	switch *format {
+	case csvFormat:
+		fmt.Printf("%s,G,%d,\n", t, e.Glucose)
+	case textFormat:
+		fmt.Printf("%s  %3d  %3d\n", t, e.Glucose, e.Noise)
 	}
+}
+
+func printBG(t string, bg dexcom.BGInfo) {
+	printEGV(t, bg.EGV)
+	printSensor(t, bg.Sensor)
+}
+
+func printCalibration(t string, cal dexcom.CalibrationInfo) {
 	switch *format {
 	case csvFormat:
 		fmt.Printf("%s,%s,,,%g,%g,%g,%g\n", t, "C", cal.Slope, cal.Intercept, cal.Scale, cal.Decay)
@@ -156,10 +165,7 @@ func printCalibration(t string, cal *dexcom.CalibrationInfo) {
 	}
 }
 
-func printMeter(t string, m *dexcom.MeterInfo) {
-	if m == nil {
-		return
-	}
+func printMeter(t string, m dexcom.MeterInfo) {
 	switch *format {
 	case csvFormat:
 		fmt.Printf("%s,%s,%d\n", t, "M", m.Glucose)
