@@ -13,15 +13,17 @@ import (
 
 const (
 	csvFormat  = "csv"
-	textFormat = "text"
 	jsonFormat = "json"
+	nsFormat   = "ns"
+	textFormat = "text"
 )
 
 var (
-	all         = flag.Bool("a", false, "get all records")
-	duration    = flag.Duration("d", time.Hour, "get `duration` worth of previous records")
-	format      = flag.String("f", textFormat, "format in which to print records (csv, json, or text)")
-	egv         = flag.Bool("g", true, "include glucose records")
+	all      = flag.Bool("a", false, "get all records")
+	duration = flag.Duration("d", time.Hour, "get `duration` worth of previous records")
+	format   = flag.String("f", textFormat, "format in which to print records (csv, json, ns, or text)")
+
+	egv         = flag.Bool("e", true, "include EGV records")
 	sensor      = flag.Bool("s", false, "include sensor records")
 	calibration = flag.Bool("c", false, "include calibration records")
 	meter       = flag.Bool("m", false, "include meter records")
@@ -40,7 +42,7 @@ var (
 func main() {
 	flag.Parse()
 	switch *format {
-	case csvFormat, jsonFormat, textFormat:
+	case csvFormat, jsonFormat, nsFormat, textFormat:
 	default:
 		flag.Usage()
 		return
@@ -62,13 +64,15 @@ func main() {
 	}
 	scans := scanRecords(cgm, cutoff)
 	results := dexcom.MergeHistory(scans...)
+	if len(results) == 0 {
+		return
+	}
+	if *format == nsFormat {
+		printJSON(dexcom.NightscoutEntries(results))
+		return
+	}
 	if *format == jsonFormat {
-		e := json.NewEncoder(os.Stdout)
-		e.SetIndent("", "  ")
-		err := e.Encode(results)
-		if err != nil {
-			log.Fatal(err)
-		}
+		printJSON(results)
 		return
 	}
 	if *format == csvFormat {
@@ -85,18 +89,7 @@ func scanRecords(cgm *dexcom.CGM, cutoff time.Time) []dexcom.Records {
 		if !*t.flag {
 			continue
 		}
-		var v dexcom.Records
-		// Special case when both EGV and sensor records are requested.
-		if t.page == dexcom.EGVData && *sensor {
-			v = cgm.GlucoseReadings(cutoff)
-		} else if t.page == dexcom.SensorData && *egv {
-			continue
-		} else {
-			v = cgm.ReadHistory(t.page, cutoff)
-		}
-		if len(v) != 0 {
-			scans = append(scans, v)
-		}
+		scans = append(scans, cgm.ReadHistory(t.page, cutoff))
 	}
 	if cgm.Error() != nil {
 		log.Fatal(cgm.Error())
@@ -107,6 +100,15 @@ func scanRecords(cgm *dexcom.CGM, cutoff time.Time) []dexcom.Records {
 	return scans
 }
 
+func printJSON(v interface{}) {
+	e := json.NewEncoder(os.Stdout)
+	e.SetIndent("", "  ")
+	err := e.Encode(v)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func printRecord(r dexcom.Record) {
 	t := r.Time().Format(dexcom.UserTimeLayout)
 	switch info := r.Info.(type) {
@@ -114,8 +116,6 @@ func printRecord(r dexcom.Record) {
 		printSensor(t, info)
 	case dexcom.EGVInfo:
 		printEGV(t, info)
-	case dexcom.BGInfo:
-		printBG(t, info)
 	case dexcom.CalibrationInfo:
 		printCalibration(t, info)
 	case dexcom.MeterInfo:
@@ -141,11 +141,6 @@ func printEGV(t string, e dexcom.EGVInfo) {
 	case textFormat:
 		fmt.Printf("%s  %3d  %3d\n", t, e.Glucose, e.Noise)
 	}
-}
-
-func printBG(t string, bg dexcom.BGInfo) {
-	printEGV(t, bg.EGV)
-	printSensor(t, bg.Sensor)
 }
 
 func printCalibration(t string, cal dexcom.CalibrationInfo) {
