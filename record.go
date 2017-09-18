@@ -53,12 +53,6 @@ type (
 		Raw         int32
 		TimeApplied time.Time
 	}
-
-	// BGInfo is a synthetic BG record combining sensor and EGV info.
-	BGInfo struct {
-		Sensor SensorInfo
-		EGV    EGVInfo
-	}
 )
 
 // Time returns the record's display time.
@@ -66,15 +60,9 @@ func (r Record) Time() time.Time {
 	return r.Timestamp.DisplayTime
 }
 
-// Glucose returns the glucose field from an EGV or BG record.
+// Glucose returns the glucose field from an EGV record.
 func (r Record) Glucose() uint16 {
-	switch info := r.Info.(type) {
-	case EGVInfo:
-		return info.Glucose
-	case BGInfo:
-		return info.EGV.Glucose
-	}
-	panic(fmt.Sprintf("Glucose %+v", r))
+	return r.Info.(EGVInfo).Glucose
 }
 
 // Len returns the number of records.
