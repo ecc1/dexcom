@@ -3,8 +3,6 @@ package dexcom
 import (
 	"log"
 	"time"
-
-	"github.com/ecc1/timeseries"
 )
 
 // ReadHistory returns records since the specified time.
@@ -80,40 +78,4 @@ func MergeHistory(slices ...Records) Records {
 		index[which]++
 	}
 	return results
-}
-
-const (
-	// Time window within which EGV and sensor readings will be merged.
-	glucoseReadingWindow = 10 * time.Second
-)
-
-// GlucoseReadings returns BG records since the specified time.
-func (cgm *CGM) GlucoseReadings(since time.Time) []Record {
-	sensor := cgm.ReadHistory(SensorData, since)
-	if cgm.Error() != nil {
-		return nil
-	}
-	egv := cgm.ReadHistory(EGVData, since)
-	if cgm.Error() != nil {
-		return nil
-	}
-	aligned := timeseries.Align(sensor, egv, glucoseReadingWindow)
-	readings := make([]Record, len(aligned))
-	for i, c := range aligned {
-		var bg BGInfo
-		if c.Two != -1 {
-			r := egv[c.Two]
-			readings[i].Timestamp = r.Timestamp
-			bg.EGV = r.Info.(EGVInfo)
-		}
-		// Check for sensor info last so that its slightly
-		// earlier timestamp will be used, if present.
-		if c.One != -1 {
-			r := sensor[c.One]
-			readings[i].Timestamp = r.Timestamp
-			bg.Sensor = r.Info.(SensorInfo)
-		}
-		readings[i].Info = bg
-	}
-	return readings
 }
