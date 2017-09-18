@@ -110,7 +110,7 @@ func (cgm *CGM) ReadRawRecords(pageType PageType, pageNumber int) [][]byte {
 }
 
 // ReadRecords reads the specified page and returns its records.
-func (cgm *CGM) ReadRecords(pageType PageType, pageNumber int) []Record {
+func (cgm *CGM) ReadRecords(pageType PageType, pageNumber int) Records {
 	data := cgm.ReadRawRecords(pageType, pageNumber)
 	if cgm.Error() != nil {
 		return nil
@@ -178,8 +178,8 @@ func unmarshalPage(v []byte) (*pageInfo, error) {
 	return &page, nil
 }
 
-func unmarshalRecords(pageType PageType, data [][]byte) ([]Record, error) {
-	records := make([]Record, 0, len(data))
+func unmarshalRecords(pageType PageType, data [][]byte) (Records, error) {
+	records := make(Records, 0, len(data))
 	var err error
 	for _, rec := range data {
 		r := Record{}

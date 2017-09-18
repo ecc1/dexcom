@@ -43,7 +43,7 @@ func main() {
 	if cgm.Error() != nil {
 		log.Fatal(cgm.Error())
 	}
-	var results []dexcom.Record
+	var results dexcom.Records
 	if *pageNumber != -1 {
 		if *rawFlag {
 			rawRecords(cgm, pageType, *pageNumber)
@@ -76,7 +76,7 @@ func rawRecords(cgm *dexcom.CGM, pageType dexcom.PageType, pageNum int) {
 	}
 }
 
-func printResults(results []dexcom.Record) {
+func printResults(results dexcom.Records) {
 	e := json.NewEncoder(os.Stdout)
 	e.SetIndent("", "  ")
 	err := e.Encode(results)

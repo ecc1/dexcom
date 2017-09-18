@@ -11,7 +11,7 @@ func (cgm *CGM) ReadHistory(pageType PageType, since time.Time) Records {
 	if cgm.Error() != nil {
 		return nil
 	}
-	var results []Record
+	var results Records
 	proc := func(r Record) error {
 		t := r.Time()
 		if t.Before(since) {
@@ -31,7 +31,7 @@ func (cgm *CGM) ReadCount(pageType PageType, count int) Records {
 	if cgm.Error() != nil {
 		return nil
 	}
-	results := make([]Record, 0, count)
+	results := make(Records, 0, count)
 	proc := func(r Record) error {
 		results = append(results, r)
 		if len(results) == count {
@@ -59,7 +59,7 @@ func MergeHistory(slices ...Records) Records {
 		length[i] = len(v)
 		total += len(v)
 	}
-	results := make([]Record, total)
+	results := make(Records, total)
 	index := make([]int, n)
 	for next := range results {
 		// Find slice with latest current value.

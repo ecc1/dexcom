@@ -10,7 +10,7 @@ import (
 
 // NightscoutEntries converts records (in reverse-chronological order)
 // into a Nightscout entries.  Neighboring Sensor and EGV records are merged.
-func NightscoutEntries(records []Record) nightscout.Entries {
+func NightscoutEntries(records Records) nightscout.Entries {
 	entries := make(nightscout.Entries, len(records))
 	for i, r := range records {
 		entries[i] = r.nightscoutEntry()
