@@ -132,13 +132,14 @@ func authenticate(device ble.Device, reauth bool) error {
 	if err != nil {
 		return err
 	}
-	auth, err := device.Conn().GetCharacteristic(authentication)
+	var auth ble.Characteristic
+	auth, err = device.Conn().GetCharacteristic(authentication)
 	if err != nil {
 		return err
 	}
 	if !reauth {
-		// nolint
-		data, err := auth.ReadValue()
+		var data []byte
+		data, err = auth.ReadValue()
 		if err != nil {
 			return err
 		}

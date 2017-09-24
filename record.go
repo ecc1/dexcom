@@ -6,15 +6,17 @@ import (
 	"time"
 )
 
-// nolint
 type (
+	// Record represents a time-stamped Dexcom receiver record.
 	Record struct {
 		Timestamp Timestamp
 		Info      interface{}
 	}
 
+	// Records represents a sequence of records.
 	Records []Record
 
+	// SensorInfo represents a sensor reading.
 	SensorInfo struct {
 		Unfiltered uint32
 		Filtered   uint32
@@ -22,6 +24,7 @@ type (
 		Unknown    byte
 	}
 
+	// EGVInfo represents an estimated glucose value.
 	EGVInfo struct {
 		Glucose     uint16
 		DisplayOnly bool
@@ -29,16 +32,19 @@ type (
 		Trend       Trend
 	}
 
+	// InsertionInfo represents a sensor change event.
 	InsertionInfo struct {
 		SystemTime time.Time
 		Event      SensorChange
 	}
 
+	// MeterInfo represents a meter reading.
 	MeterInfo struct {
 		Glucose   uint16
 		MeterTime time.Time
 	}
 
+	// CalibrationInfo represents a calibration event.
 	CalibrationInfo struct {
 		Slope     float64
 		Intercept float64
@@ -47,6 +53,7 @@ type (
 		Data      []CalibrationRecord
 	}
 
+	// CalibrationRecord represents a calibration data point.
 	CalibrationRecord struct {
 		TimeEntered time.Time
 		Glucose     int32

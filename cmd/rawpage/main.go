@@ -14,7 +14,6 @@ var (
 	pageTypeFlag = flag.Int("p", int(dexcom.EGVData), "page `type` to read")
 )
 
-// nolint
 func usage() {
 	fmt.Fprintf(os.Stderr, "Usage: %s [options]\n", os.Args[0])
 	flag.PrintDefaults()
@@ -29,7 +28,6 @@ func main() {
 	flag.Parse()
 	pageType := dexcom.PageType(*pageTypeFlag)
 	if pageType < dexcom.FirstPageType || dexcom.LastPageType < pageType {
-		// nolint
 		fmt.Fprintf(os.Stderr, "invalid page type (%d)\n", *pageTypeFlag)
 		flag.Usage()
 		os.Exit(1)

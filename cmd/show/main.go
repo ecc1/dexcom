@@ -19,7 +19,6 @@ var (
 	rawFlag      = flag.Bool("r", false, "show raw record data")
 )
 
-// nolint
 func usage() {
 	fmt.Fprintf(os.Stderr, "Usage: %s [options]\n", os.Args[0])
 	flag.PrintDefaults()
@@ -34,7 +33,6 @@ func main() {
 	flag.Parse()
 	pageType := dexcom.PageType(*pageTypeFlag)
 	if pageType < dexcom.FirstPageType || dexcom.LastPageType < pageType {
-		// nolint
 		fmt.Fprintf(os.Stderr, "invalid page type (%d)\n", *pageTypeFlag)
 		flag.Usage()
 		os.Exit(1)

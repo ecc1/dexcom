@@ -32,5 +32,5 @@ func (conn *usbConn) Receive(data []byte) error {
 
 // Close closes the USB connection.
 func (conn *usbConn) Close() {
-	conn.Port.Close() // nolint
+	_ = conn.Port.Close()
 }
