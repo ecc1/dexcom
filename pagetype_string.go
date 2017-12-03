@@ -2,7 +2,7 @@
 
 package dexcom
 
-import "fmt"
+import "strconv"
 
 const (
 	_PageType_name_0 = "ManufacturingDataFirmwareDataSoftwareDataSensorDataEGVDataCalibrationDataDeviationDataInsertionTimeDataReceiverLogDataReceiverErrorDataMeterDataUserEventDataUserSettingData"
@@ -21,6 +21,6 @@ func (i PageType) String() string {
 	case i == 255:
 		return _PageType_name_1
 	default:
-		return fmt.Sprintf("PageType(%d)", i)
+		return "PageType(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
 }

@@ -2,7 +2,7 @@
 
 package dexcom
 
-import "fmt"
+import "strconv"
 
 const (
 	_SpecialGlucose_name_0 = "SensorNotActiveMinimalDeviationNoAntenna"
@@ -32,6 +32,6 @@ func (i SpecialGlucose) String() string {
 	case i == 12:
 		return _SpecialGlucose_name_3
 	default:
-		return fmt.Sprintf("SpecialGlucose(%d)", i)
+		return "SpecialGlucose(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
 }

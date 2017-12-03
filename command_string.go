@@ -2,7 +2,7 @@
 
 package dexcom
 
-import "fmt"
+import "strconv"
 
 const (
 	_Command_name_0 = "NullAckNakInvalidCommandInvalidParamIncompletePacketReceivedReceiverErrorInvalidMode"
@@ -51,6 +51,6 @@ func (i Command) String() string {
 		i -= 59
 		return _Command_name_7[_Command_index_7[i]:_Command_index_7[i+1]]
 	default:
-		return fmt.Sprintf("Command(%d)", i)
+		return "Command(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
 }

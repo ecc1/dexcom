@@ -2,7 +2,7 @@
 
 package dexcom
 
-import "fmt"
+import "strconv"
 
 const (
 	_SensorChange_name_0 = "Stopped"
@@ -21,6 +21,6 @@ func (i SensorChange) String() string {
 	case i == 7:
 		return _SensorChange_name_1
 	default:
-		return fmt.Sprintf("SensorChange(%d)", i)
+		return "SensorChange(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
 }
