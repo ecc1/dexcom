@@ -14,7 +14,7 @@ func (cgm *CGM) ReadHistory(pageType PageType, since time.Time) Records {
 	var results Records
 	proc := func(r Record) error {
 		t := r.Time()
-		if t.Before(since) {
+		if !t.After(since) {
 			log.Printf("stopping %v scan at %s", pageType, t.Format(UserTimeLayout))
 			return IterationDone
 		}
