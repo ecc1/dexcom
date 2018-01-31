@@ -18,7 +18,6 @@ var (
 	verboseFlag   = flag.Bool("v", false, "verbose mode")
 
 	gapDuration = 7 * time.Minute
-	timeLayout  = "2006-01-02 15:04:05"
 
 	pageTypes = []dexcom.PageType{
 		dexcom.SensorData,
@@ -93,9 +92,11 @@ func upload(entries nightscout.Entries) {
 
 func printGaps(gaps []nightscout.Gap) {
 	for _, g := range gaps {
-		start := g.Start
-		finish := g.Finish
-		gap := finish.Sub(start)
-		log.Printf("%v gap from %s to %s", gap, start.Format(timeLayout), finish.Format(timeLayout))
+		t1 := g.Start
+		t2 := g.Finish
+		gap := t2.Sub(t1)
+		s1 := t1.Format(dexcom.UserTimeLayout)
+		s2 := t2.Format(dexcom.UserTimeLayout)
+		log.Printf("%v gap from %s to %s", gap, s1, s2)
 	}
 }

@@ -29,8 +29,7 @@ func TestTime(t *testing.T) {
 }
 
 func parseTime(s string) time.Time {
-	const layout = "2006-01-02 15:04:05"
-	t, err := time.ParseInLocation(layout, s, time.Local)
+	t, err := time.ParseInLocation(UserTimeLayout, s, time.Local)
 	if err != nil {
 		panic(err)
 	}
