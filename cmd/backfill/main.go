@@ -11,13 +11,15 @@ import (
 	"github.com/ecc1/nightscout"
 )
 
+const (
+	gapDuration = 7 * time.Minute
+)
+
 var (
 	checkDuration = flag.Duration("c", time.Hour, "`duration` to check")
 	gapsOnlyFlag  = flag.Bool("g", false, "list Nightscout gaps only")
 	noUploadFlag  = flag.Bool("s", false, "simulate Nightscout uploads")
 	verboseFlag   = flag.Bool("v", false, "verbose mode")
-
-	gapDuration = 7 * time.Minute
 
 	pageTypes = []dexcom.PageType{
 		dexcom.SensorData,
