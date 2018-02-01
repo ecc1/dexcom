@@ -33,13 +33,12 @@ var (
 	jsonFile           = flag.String("f", "", "append results to JSON `file`")
 	jsonCutoff         = flag.Duration("k", 7*24*time.Hour, "maximum age of CGM entries to keep in JSON file")
 
-	cgm            *dexcom.CGM
-	cgmTime        time.Time
-	cgmEpoch       time.Time
-	glucose        dexcom.Records
-	cgmRecords     dexcom.Records
-	reverseEntries Entries
-	forwardEntries Entries
+	cgm        *dexcom.CGM
+	cgmTime    time.Time
+	cgmEpoch   time.Time
+	glucose    dexcom.Records
+	cgmRecords dexcom.Records
+	nsEntries  Entries
 
 	somethingFailed = false
 )
@@ -54,7 +53,7 @@ func main() {
 	papertrail.StartLogging()
 	getCGMInfo()
 	if *verboseFlag && !*uploadFlag {
-		forwardEntries.Print()
+		nsEntries.Print()
 	}
 	if *jsonFile != "" {
 		appendJSON()
@@ -86,10 +85,9 @@ func getCGMInfo() {
 		log.Printf("%d valid glucose records", len(glucose))
 	}
 	cgmRecords = dexcom.MergeHistory(sensor, glucose, meter, cal)
-	reverseEntries = discardIncomplete(dexcom.NightscoutEntries(cgmRecords))
-	forwardEntries = reverseEntries.Sort()
+	nsEntries = discardIncomplete(dexcom.NightscoutEntries(cgmRecords))
 	log.Printf("%d CGM records", len(cgmRecords))
-	describeEntries(forwardEntries, "Nightscout")
+	describeEntries(nsEntries, "Nightscout")
 }
 
 func timeStr(e nightscout.Entry) string {
@@ -132,7 +130,7 @@ func uploadEntries() {
 		log.Printf("no Nightscout gaps")
 		return
 	}
-	missing := nightscout.Missing(reverseEntries, gaps)
+	missing := nightscout.Missing(nsEntries, gaps)
 	log.Printf("uploading %d entries to Nightscout", len(missing))
 	for _, e := range missing {
 		err := nightscout.Upload("POST", "entries", e)
@@ -195,15 +193,22 @@ func appendJSON() {
 	}
 	log.Printf("read %d entries from %s", len(previous), *jsonFile)
 	previous.Sort()
-	log.Printf("merging %d old and %d new entries", len(previous), len(forwardEntries))
-	merged := nightscout.MergeEntries(previous, forwardEntries)
+	log.Printf("merging %d old and %d new entries", len(previous), len(nsEntries))
+	merged := nightscout.MergeEntries(previous, nsEntries)
 	describeEntries(merged, "merged")
 	cutoff := cgmTime.Add(-*jsonCutoff)
 	trimmed := merged.TrimAfter(cutoff)
 	describeEntries(trimmed, "trimmed")
+	// Back up JSON file with a "~" suffix.
+	err = os.Rename(*jsonFile, *jsonFile+"~")
+	if err != nil && !os.IsNotExist(err) {
+		log.Print(err)
+		somethingFailed = true
+	}
 	err = trimmed.Save(*jsonFile)
 	if err != nil {
 		log.Print(err)
 		somethingFailed = true
 	}
+	log.Printf("wrote %d entries to %s", len(trimmed), *jsonFile)
 }
