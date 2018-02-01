@@ -23,7 +23,7 @@ func (r Record) nightscoutEntry() nightscout.Entry {
 	e := nightscout.Entry{
 		Date:       nightscout.Date(t),
 		DateString: t.Format(nightscout.DateStringLayout),
-		Device:     nightscout.Hostname(),
+		Device:     nightscout.Device(),
 	}
 	switch info := r.Info.(type) {
 	case SensorInfo:

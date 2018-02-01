@@ -72,11 +72,14 @@ var (
 			RSSI:       -62,
 		},
 	}
+
+	dev = nightscout.Device()
+
 	e1 = Entry{
 		Type:       "cal",
 		Date:       nsDate("2017-09-17T01:13:51-04:00"),
 		DateString: "2017-09-17T01:13:51-04:00",
-		Device:     nightscout.Hostname(),
+		Device:     dev,
 		Slope:      939.6817717490421,
 		Intercept:  35926.604186515906,
 		Scale:      1,
@@ -85,14 +88,14 @@ var (
 		Type:       "mbg",
 		Date:       nsDate("2017-09-17T01:13:49-04:00"),
 		DateString: "2017-09-17T01:13:49-04:00",
-		Device:     nightscout.Hostname(),
+		Device:     dev,
 		MBG:        128,
 	}
 	e3 = Entry{
 		Type:       "sgv",
 		Date:       nsDate("2017-09-17T11:13:17-04:00"),
 		DateString: "2017-09-17T11:13:17-04:00",
-		Device:     nightscout.Hostname(),
+		Device:     dev,
 		SGV:        84,
 		Direction:  "Flat",
 		Noise:      1,
@@ -101,7 +104,7 @@ var (
 		Type:       "sgv",
 		Date:       nsDate("2017-09-17T11:13:16-04:00"),
 		DateString: "2017-09-17T11:13:16-04:00",
-		Device:     nightscout.Hostname(),
+		Device:     dev,
 		Unfiltered: 119088,
 		Filtered:   110288,
 		RSSI:       -62,
@@ -110,7 +113,7 @@ var (
 		Type:       "sgv",
 		Date:       nsDate("2017-09-17T11:13:16-04:00"),
 		DateString: "2017-09-17T11:13:16-04:00",
-		Device:     nightscout.Hostname(),
+		Device:     dev,
 		Unfiltered: 119088,
 		Filtered:   110288,
 		RSSI:       -62,
