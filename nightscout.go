@@ -55,7 +55,7 @@ func nightscoutTrend(t Trend) string {
 	case UpUp:
 		return "DoubleUp"
 	case Up:
-		return "SingeUp"
+		return "SingleUp"
 	case Up45:
 		return "FortyFiveUp"
 	case Flat:
