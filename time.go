@@ -5,6 +5,9 @@ import (
 )
 
 const (
+	// JSONTimeLayout specifies the format for JSON time values.
+	JSONTimeLayout = time.RFC3339
+
 	// UserTimeLayout specifies a consistent, human-readable format for local time.
 	UserTimeLayout = "2006-01-02 15:04:05"
 )

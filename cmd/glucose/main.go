@@ -21,6 +21,7 @@ const (
 var (
 	all      = flag.Bool("a", false, "get all records")
 	duration = flag.Duration("d", time.Hour, "get `duration` worth of previous records")
+	since    = flag.String("t", "", "get records since the specified `time` in RFC3339 format")
 	format   = flag.String("f", textFormat, "format in which to print records (csv, json, ns, or text)")
 
 	egv         = flag.Bool("e", true, "include EGV records")
@@ -48,6 +49,7 @@ func main() {
 		return
 	}
 	var cutoff time.Time
+	var err error
 	cgm := dexcom.Open()
 	if cgm.Error() != nil {
 		log.Fatal(cgm.Error())
@@ -58,8 +60,15 @@ func main() {
 		*sensor = true
 		*calibration = true
 		*meter = true
+	} else if *since != "" {
+		cutoff, err = time.Parse(dexcom.JSONTimeLayout, *since)
+		if err != nil {
+			log.Fatal(err)
+		}
 	} else {
 		cutoff = time.Now().Add(-*duration)
+	}
+	if !*all {
 		log.Printf("retrieving records since %s", cutoff.Format(dexcom.UserTimeLayout))
 	}
 	scans := scanRecords(cgm, cutoff)
