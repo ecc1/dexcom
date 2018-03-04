@@ -21,6 +21,7 @@ const (
 var (
 	all      = flag.Bool("a", false, "get all records")
 	duration = flag.Duration("d", time.Hour, "get `duration` worth of previous records")
+	sinceFlag = flag.String("t", "", "get records since the specified `time` in RFC3339 format")
 	format   = flag.String("f", textFormat, "format in which to print records (csv, json, ns, or text)")
 
 	egv         = flag.Bool("e", true, "include EGV records")
@@ -58,6 +59,13 @@ func main() {
 		*sensor = true
 		*calibration = true
 		*meter = true
+	} else if *sinceFlag != "" {
+		var err error
+		cutoff, err = time.Parse(dexcom.JSONTimeLayout, *sinceFlag)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%v\n", err)
+			os.Exit(1)
+		}
 	} else {
 		cutoff = time.Now().Add(-*duration)
 		log.Printf("retrieving records since %s", cutoff.Format(dexcom.UserTimeLayout))
