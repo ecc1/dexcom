@@ -6,12 +6,6 @@ Based on the Python version at github.com/bewest/decoding-dexcom
 */
 package dexcom
 
-import (
-	"log"
-
-	"github.com/ecc1/usbserial"
-)
-
 // Connection is the interface satisfied by a CGM connection.
 type Connection interface {
 	Send([]byte) error
@@ -31,10 +25,6 @@ func Open() *CGM {
 	conn, err := OpenUSB()
 	if err == nil {
 		return &CGM{Connection: conn}
-	}
-	_, notFound := err.(usbserial.DeviceNotFoundError)
-	if !notFound {
-		log.Print(err)
 	}
 	conn, err = OpenBLE()
 	return &CGM{Connection: conn, err: err}

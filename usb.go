@@ -1,7 +1,9 @@
 package dexcom
 
 import (
-	"github.com/ecc1/usbserial"
+	"log"
+
+	"github.com/ecc1/serial"
 )
 
 const (
@@ -10,27 +12,33 @@ const (
 	dexcomProduct = 0x0047
 )
 
-type usbConn struct {
-	*usbserial.Port
-}
+type usbConn serial.Port
 
 // OpenUSB opens the USB serial device for a Dexcom G4 receiver.
 func OpenUSB() (Connection, error) {
-	port, err := usbserial.Open(dexcomVendor, dexcomProduct)
-	return &usbConn{port}, err
+	device, err := serial.FindUSB(dexcomVendor, dexcomProduct)
+	if err != nil {
+		_, notFound := err.(serial.DeviceNotFoundError)
+		if !notFound {
+			log.Print(err)
+		}
+		return nil, err
+	}
+	port, err := serial.Open(device, 115200)
+	return (*usbConn)(port), err
 }
 
 // Send writes data over the USB connection.
 func (conn *usbConn) Send(data []byte) error {
-	return conn.Write(data)
+	return (*serial.Port)(conn).Write(data)
 }
 
 // Receive reads data from the USB connection.
 func (conn *usbConn) Receive(data []byte) error {
-	return conn.Read(data)
+	return (*serial.Port)(conn).Read(data)
 }
 
 // Close closes the USB connection.
 func (conn *usbConn) Close() {
-	_ = conn.Port.Close()
+	_ = (*serial.Port)(conn).Close()
 }
