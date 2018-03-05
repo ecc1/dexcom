@@ -27,6 +27,7 @@ const (
 
 var (
 	cgmHistory         = flag.Duration("b", 20*time.Minute, "maximum age of CGM entries to fetch")
+	sinceFlag          = flag.String("t", "", "get records since the specified `time` in RFC3339 format")
 	uploadFlag         = flag.Bool("u", false, "upload to Nightscout")
 	simulateUploadFlag = flag.Bool("s", false, "simulate upload to Nightscout")
 	verboseFlag        = flag.Bool("v", false, "verbose mode")
@@ -38,7 +39,8 @@ var (
 	cgmEpoch   time.Time
 	glucose    dexcom.Records
 	cgmRecords dexcom.Records
-	nsEntries  Entries
+	oldEntries Entries
+	newEntries Entries
 
 	somethingFailed = false
 )
@@ -51,12 +53,15 @@ func main() {
 	nightscout.SetNoUpload(*simulateUploadFlag)
 	nightscout.SetVerbose(*verboseFlag)
 	papertrail.StartLogging()
+	if *jsonFile != "" {
+		oldEntries = readJSON()
+	}
 	getCGMInfo()
 	if *verboseFlag && !*uploadFlag {
-		nsEntries.Print()
+		newEntries.Print()
 	}
 	if *jsonFile != "" {
-		appendJSON()
+		updateJSON()
 	}
 	if *uploadFlag {
 		uploadEntries()
@@ -68,11 +73,27 @@ func main() {
 
 func getCGMInfo() {
 	cgm = dexcom.Open()
+	cgmTime = checkCGMClock()
 	if cgm.Error() != nil {
 		log.Fatal(cgm.Error())
 	}
-	cgmTime = checkCGMClock()
-	cgmEpoch = cgmTime.Add(-*cgmHistory)
+	if *sinceFlag != "" {
+		var err error
+		cgmEpoch, err = time.Parse(dexcom.JSONTimeLayout, *sinceFlag)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		cgmEpoch = cgmTime.Add(-*cgmHistory)
+	}
+	// Use time of most recent entry to reduce how far back to go.
+	if len(oldEntries) != 0 {
+		lastTime := oldEntries[0].Time()
+		if cgmEpoch.Before(lastTime) {
+			cgmEpoch = lastTime
+		}
+	}
+	log.Printf("retrieving records since %s", cgmEpoch.Format(dexcom.UserTimeLayout))
 	sensor := cgm.ReadHistory(dexcom.SensorData, cgmEpoch)
 	egv := cgm.ReadHistory(dexcom.EGVData, cgmEpoch)
 	meter := cgm.ReadHistory(dexcom.MeterData, cgmEpoch)
@@ -85,9 +106,9 @@ func getCGMInfo() {
 		log.Printf("%d valid glucose records", len(glucose))
 	}
 	cgmRecords = dexcom.MergeHistory(sensor, glucose, meter, cal)
-	nsEntries = discardIncomplete(dexcom.NightscoutEntries(cgmRecords))
 	log.Printf("%d CGM records", len(cgmRecords))
-	describeEntries(nsEntries, "Nightscout")
+	newEntries = discardIncomplete(dexcom.NightscoutEntries(cgmRecords))
+	describeEntries(newEntries, "Nightscout")
 }
 
 func timeStr(e nightscout.Entry) string {
@@ -130,7 +151,7 @@ func uploadEntries() {
 		log.Printf("no Nightscout gaps")
 		return
 	}
-	missing := nightscout.Missing(nsEntries, gaps)
+	missing := nightscout.Missing(newEntries, gaps)
 	log.Printf("uploading %d entries to Nightscout", len(missing))
 	for _, e := range missing {
 		err := nightscout.Upload("POST", "entries", e)
@@ -150,6 +171,9 @@ func uploadEntries() {
 // matching EGV record, but the raw-only entry will be uploaded
 // because it's no longer the most recent.
 func discardIncomplete(entries Entries) Entries {
+	if len(entries) == 0 {
+		return entries
+	}
 	e := entries[0]
 	if e.Type == nightscout.SGVType && (e.SGV == 0 || e.Unfiltered == 0) {
 		return entries[1:]
@@ -184,23 +208,27 @@ func printGaps(gaps []nightscout.Gap) {
 	}
 }
 
-func appendJSON() {
-	previous, err := nightscout.ReadEntries(*jsonFile)
+func readJSON() Entries {
+	entries, err := nightscout.ReadEntries(*jsonFile)
 	if err != nil && !os.IsNotExist(err) {
-		log.Print(err)
+		log.Printf("%s: %v", *jsonFile, err)
 		somethingFailed = true
-		return
+		return nil
 	}
-	log.Printf("read %d entries from %s", len(previous), *jsonFile)
-	previous.Sort()
-	log.Printf("merging %d old and %d new entries", len(previous), len(nsEntries))
-	merged := nightscout.MergeEntries(previous, nsEntries)
+	log.Printf("read %d entries from %s", len(entries), *jsonFile)
+	entries.Sort()
+	return entries
+}
+
+func updateJSON() {
+	log.Printf("merging %d old and %d new entries", len(oldEntries), len(newEntries))
+	merged := nightscout.MergeEntries(oldEntries, newEntries)
 	describeEntries(merged, "merged")
 	cutoff := cgmTime.Add(-*jsonCutoff)
 	trimmed := merged.TrimAfter(cutoff)
 	describeEntries(trimmed, "trimmed")
 	// Back up JSON file with a "~" suffix.
-	err = os.Rename(*jsonFile, *jsonFile+"~")
+	err := os.Rename(*jsonFile, *jsonFile+"~")
 	if err != nil && !os.IsNotExist(err) {
 		log.Print(err)
 		somethingFailed = true
