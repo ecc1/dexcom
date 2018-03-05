@@ -32,7 +32,9 @@ The `cmd` directory contains some simple utility programs:
  Note that a USB connection works much faster for gaps
  that are hours or days in the past, and can be done from any Linux machine,
  not just an [OpenAPS](https://github.com/openapsopenaps) rig.
-* `setclock` sets the receiver's date and time.
+* `g4setclock` sets the receiver's date and time.
+* `g4update` retrieves CGM data, with options to update a local JSON file
+ and upload to [Nightscout.](https://github.com/nightscout/cgm-remote-monitor)
 
 ### Documentation
 
