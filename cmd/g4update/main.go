@@ -87,17 +87,18 @@ func getCGMInfo() {
 		cgmEpoch = cgmTime.Add(-*cgmHistory)
 	}
 	// Use time of most recent entry to reduce how far back to go.
+	cutoff := cgmEpoch
 	if len(oldEntries) != 0 {
 		lastTime := oldEntries[0].Time()
-		if cgmEpoch.Before(lastTime) {
-			cgmEpoch = lastTime
+		if cutoff.Before(lastTime) {
+			cutoff = lastTime
 		}
 	}
-	log.Printf("retrieving records since %s", cgmEpoch.Format(dexcom.UserTimeLayout))
-	sensor := cgm.ReadHistory(dexcom.SensorData, cgmEpoch)
-	egv := cgm.ReadHistory(dexcom.EGVData, cgmEpoch)
-	meter := cgm.ReadHistory(dexcom.MeterData, cgmEpoch)
-	cal := cgm.ReadHistory(dexcom.CalibrationData, cgmEpoch)
+	log.Printf("retrieving records since %s", cutoff.Format(dexcom.UserTimeLayout))
+	sensor := cgm.ReadHistory(dexcom.SensorData, cutoff)
+	egv := cgm.ReadHistory(dexcom.EGVData, cutoff)
+	meter := cgm.ReadHistory(dexcom.MeterData, cutoff)
+	cal := cgm.ReadHistory(dexcom.CalibrationData, cutoff)
 	if cgm.Error() != nil {
 		log.Fatal(cgm.Error())
 	}
