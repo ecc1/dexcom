@@ -26,6 +26,8 @@ func TestPage(t *testing.T) {
 		{CalibrationData, 1432, 0},
 		// The one record in this page has CRC = 63 FF, followed by FF bytes for padding.
 		{CalibrationData, 1432, 1},
+		// This page contains 148-byte rev 2 calibration records.
+		{CalibrationData, 252, 0},
 	}
 	for _, c := range cases {
 		t.Run(c.pageType.String(), func(t *testing.T) {

@@ -41,7 +41,7 @@ var recordLength = map[PageType]int{
 	SoftwareData:      0,
 	SensorData:        20,
 	EGVData:           13,
-	CalibrationData:   249,
+	CalibrationData:   249, // except for non-Share receivers, see below
 	InsertionTimeData: 15,
 	MeterData:         16,
 }
@@ -122,34 +122,43 @@ func (cgm *CGM) ReadRecords(pageType PageType, pageNumber int) Records {
 	return records
 }
 
+const (
+	headerSize       = 28
+	oldCalRecordRev  = 2
+	oldCalRecordSize = 148
+)
+
 // unmarshalPage validates the CRC of the given page data and
 // uses the page type to slice the data into raw records.
 func unmarshalPage(v []byte) (*pageInfo, error) {
-	const headerSize = 28
 	if len(v) < headerSize {
 		return nil, fmt.Errorf("invalid page length (%d)", len(v))
 	}
-	crc := unmarshalUint16(v[headerSize-2 : headerSize])
-	calc := crc16(v[:headerSize-2])
+	h := v[:headerSize]
+	v = v[headerSize:]
+	crc := unmarshalUint16(h[headerSize-2:])
+	calc := crc16(h[:headerSize-2])
 	if crc != calc {
 		return nil, CRCError{
 			Kind:     "page",
 			Received: crc,
 			Computed: calc,
-			Data:     v,
+			Data:     h,
 		}
 	}
-	// firstIndex := int(unmarshalInt32(v[0:4]))
-	numRecords := int(unmarshalInt32(v[4:8]))
-	pageType := PageType(v[8])
-	// rev := v[9]
-	pageNumber := int(unmarshalInt32(v[10:14]))
-	// r1 := unmarshalInt32(v[14:18])
-	// r2 := unmarshalInt32(v[18:22])
-	// r3 := unmarshalInt32(v[22:26])
+	// firstIndex := int(unmarshalInt32(h[0:4]))
+	numRecords := int(unmarshalInt32(h[4:8]))
+	pageType := PageType(h[8])
+	rev := h[9]
+	pageNumber := int(unmarshalInt32(h[10:14]))
+	// r1 := unmarshalInt32(h[14:18])
+	// r2 := unmarshalInt32(h[18:22])
+	// r3 := unmarshalInt32(h[22:26])
 	page := pageInfo{Type: pageType, Number: pageNumber}
-	v = v[headerSize:]
 	recordLen := recordLength[pageType]
+	if pageType == CalibrationData && rev <= oldCalRecordRev {
+		recordLen = oldCalRecordSize
+	}
 	if recordLen == 0 {
 		if numRecords != 1 {
 			return &page, fmt.Errorf("unexpected number of records (%d)", numRecords)
