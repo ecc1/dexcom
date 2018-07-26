@@ -134,10 +134,12 @@ func TestNightscoutEntry(t *testing.T) {
 		{r4, e4},
 	}
 	for _, c := range cases {
-		e := Entry(c.r.nightscoutEntry())
-		if e != c.e {
-			t.Errorf("nightscoutEntry(%v) == %v, want %v", c.r, e, c.e)
-		}
+		t.Run("", func(t *testing.T) {
+			e := Entry(c.r.nightscoutEntry())
+			if e != c.e {
+				t.Errorf("nightscoutEntry(%v) == %v, want %v", c.r, e, c.e)
+			}
+		})
 	}
 }
 
@@ -152,10 +154,12 @@ func TestNightscoutEntries(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		e := convertEntries(NightscoutEntries(c.r))
-		if !equalEntries(e, c.e) {
-			t.Errorf("NightscoutEntries(%v) == %v, want %v", c.r, e, c.e)
-		}
+		t.Run("", func(t *testing.T) {
+			e := convertEntries(NightscoutEntries(c.r))
+			if !equalEntries(e, c.e) {
+				t.Errorf("NightscoutEntries(%v) == %v, want %v", c.r, e, c.e)
+			}
+		})
 	}
 }
 

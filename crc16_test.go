@@ -15,9 +15,11 @@ func TestCRC16(t *testing.T) {
 		{[]byte{0x01, 0x07, 0x00, 0x10, 0x04}, 0xB88B},
 	}
 	for _, c := range cases {
-		sum := crc16(c.msg)
-		if sum != c.sum {
-			t.Errorf("crc16(% X) == %X, want %X", c.msg, sum, c.sum)
-		}
+		t.Run("", func(t *testing.T) {
+			sum := crc16(c.msg)
+			if sum != c.sum {
+				t.Errorf("crc16(% X) == %X, want %X", c.msg, sum, c.sum)
+			}
+		})
 	}
 }

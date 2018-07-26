@@ -95,25 +95,27 @@ func TestUnmarshalPage(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		page, err := unmarshalPage(hexdata(c.page))
-		if err != nil {
-			t.Errorf("UnmarshalPage returned %v", err)
-		}
-		if page.Type != c.pageType {
-			t.Errorf("UnmarshalPage: page type == %d, want %d", page.Type, c.pageType)
-		}
-		if page.Number != c.pageNumber {
-			t.Errorf("UnmarshalPage: page number == %d, want %d", page.Number, c.pageNumber)
-		}
-		if len(page.Records) != len(c.records) {
-			t.Errorf("UnmarshalPage: #records == %d, want %d", len(page.Records), len(c.records))
-		}
-		for i, v := range page.Records {
-			r := hexdata(c.records[i])
-			if !bytes.Equal(v, r) {
-				t.Errorf("UnmarshalPage: record #%d == % X, want % X", i, v, r)
+		t.Run(c.pageType.String(), func(t *testing.T) {
+			page, err := unmarshalPage(hexdata(c.page))
+			if err != nil {
+				t.Errorf("UnmarshalPage returned %v", err)
 			}
-		}
+			if page.Type != c.pageType {
+				t.Errorf("UnmarshalPage: page type == %d, want %d", page.Type, c.pageType)
+			}
+			if page.Number != c.pageNumber {
+				t.Errorf("UnmarshalPage: page number == %d, want %d", page.Number, c.pageNumber)
+			}
+			if len(page.Records) != len(c.records) {
+				t.Errorf("UnmarshalPage: #records == %d, want %d", len(page.Records), len(c.records))
+			}
+			for i, v := range page.Records {
+				r := hexdata(c.records[i])
+				if !bytes.Equal(v, r) {
+					t.Errorf("UnmarshalPage: record #%d == % X, want % X", i, v, r)
+				}
+			}
+		})
 	}
 }
 

@@ -2,6 +2,7 @@ package dexcom
 
 import (
 	"bytes"
+	"fmt"
 	"math"
 	"testing"
 )
@@ -16,14 +17,18 @@ func TestMarshalUint16(t *testing.T) {
 		{math.MaxUint16, []byte{0xFF, 0xFF}},
 	}
 	for _, c := range cases {
-		rep := marshalUint16(c.val)
-		if !bytes.Equal(rep, c.rep) {
-			t.Errorf("marshalUint16(%04X) == % X, want % X", c.val, rep, c.rep)
-		}
-		val := unmarshalUint16(c.rep)
-		if val != c.val {
-			t.Errorf("unmarshalUint16(% X) == %04X, want %04X", c.rep, val, c.val)
-		}
+		t.Run(fmt.Sprintf("marshal_%d", c.val), func(t *testing.T) {
+			rep := marshalUint16(c.val)
+			if !bytes.Equal(rep, c.rep) {
+				t.Errorf("marshalUint16(%04X) == % X, want % X", c.val, rep, c.rep)
+			}
+		})
+		t.Run(fmt.Sprintf("unmarshal_%d", c.val), func(t *testing.T) {
+			val := unmarshalUint16(c.rep)
+			if val != c.val {
+				t.Errorf("unmarshalUint16(% X) == %04X, want %04X", c.rep, val, c.val)
+			}
+		})
 	}
 }
 
@@ -41,14 +46,18 @@ func TestMarshalInt16(t *testing.T) {
 		{math.MinInt16, []byte{0x00, 0x80}},
 	}
 	for _, c := range cases {
-		rep := marshalInt16(c.val)
-		if !bytes.Equal(rep, c.rep) {
-			t.Errorf("marshalInt16(%d) == % X, want % X", c.val, rep, c.rep)
-		}
-		val := unmarshalInt16(c.rep)
-		if val != c.val {
-			t.Errorf("unmarshalInt16(% X) == %d, want %d", c.rep, val, c.val)
-		}
+		t.Run(fmt.Sprintf("marshal_%d", c.val), func(t *testing.T) {
+			rep := marshalInt16(c.val)
+			if !bytes.Equal(rep, c.rep) {
+				t.Errorf("marshalInt16(%d) == % X, want % X", c.val, rep, c.rep)
+			}
+		})
+		t.Run(fmt.Sprintf("unmarshal_%d", c.val), func(t *testing.T) {
+			val := unmarshalInt16(c.rep)
+			if val != c.val {
+				t.Errorf("unmarshalInt16(% X) == %d, want %d", c.rep, val, c.val)
+			}
+		})
 	}
 }
 
@@ -62,14 +71,18 @@ func TestMarshalUint32(t *testing.T) {
 		{math.MaxUint32, []byte{0xFF, 0xFF, 0xFF, 0xFF}},
 	}
 	for _, c := range cases {
-		rep := marshalUint32(c.val)
-		if !bytes.Equal(rep, c.rep) {
-			t.Errorf("marshalUint32(%08X) == % X, want % X", c.val, rep, c.rep)
-		}
-		val := unmarshalUint32(c.rep)
-		if val != c.val {
-			t.Errorf("unmarshalUint32(% X) == %08X, want %08X", c.rep, val, c.val)
-		}
+		t.Run(fmt.Sprintf("marshal_%d", c.val), func(t *testing.T) {
+			rep := marshalUint32(c.val)
+			if !bytes.Equal(rep, c.rep) {
+				t.Errorf("marshalUint32(%08X) == % X, want % X", c.val, rep, c.rep)
+			}
+		})
+		t.Run(fmt.Sprintf("unmarshal_%d", c.val), func(t *testing.T) {
+			val := unmarshalUint32(c.rep)
+			if val != c.val {
+				t.Errorf("unmarshalUint32(% X) == %08X, want %08X", c.rep, val, c.val)
+			}
+		})
 	}
 }
 
@@ -87,18 +100,22 @@ func TestMarshalInt32(t *testing.T) {
 		{math.MinInt32, []byte{0, 0, 0, 0x80}},
 	}
 	for _, c := range cases {
-		rep := marshalInt32(c.val)
-		if !bytes.Equal(rep, c.rep) {
-			t.Errorf("marshalInt32(%d) == % X, want % X", c.val, rep, c.rep)
-		}
-		val := unmarshalInt32(c.rep)
-		if val != c.val {
-			t.Errorf("unmarshalInt32(% X) == %d, want %d", c.rep, val, c.val)
-		}
+		t.Run(fmt.Sprintf("marshal_%d", c.val), func(t *testing.T) {
+			rep := marshalInt32(c.val)
+			if !bytes.Equal(rep, c.rep) {
+				t.Errorf("marshalInt32(%d) == % X, want % X", c.val, rep, c.rep)
+			}
+		})
+		t.Run(fmt.Sprintf("unmarshal_%d", c.val), func(t *testing.T) {
+			val := unmarshalInt32(c.rep)
+			if val != c.val {
+				t.Errorf("unmarshalInt32(% X) == %d, want %d", c.rep, val, c.val)
+			}
+		})
 	}
 }
 
-func TestMarshalUint64(t *testing.T) {
+func TestUnmarshalUint64(t *testing.T) {
 	cases := []struct {
 		val uint64
 		rep []byte
@@ -108,10 +125,12 @@ func TestMarshalUint64(t *testing.T) {
 		{math.MaxUint64, []byte{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}},
 	}
 	for _, c := range cases {
-		val := unmarshalUint64(c.rep)
-		if val != c.val {
-			t.Errorf("unmarshalUint64(% X) == %016X, want %016X", c.rep, val, c.val)
-		}
+		t.Run(fmt.Sprintf("unmarshal_%d", c.val), func(t *testing.T) {
+			val := unmarshalUint64(c.rep)
+			if val != c.val {
+				t.Errorf("unmarshalUint64(% X) == %016X, want %016X", c.rep, val, c.val)
+			}
+		})
 	}
 }
 
@@ -126,9 +145,11 @@ func TestUnmarshalFloat64(t *testing.T) {
 		{[]byte{0x18, 0x2D, 0x44, 0x54, 0xFB, 0x21, 0x09, 0x40}, 3.141592653589793},
 	}
 	for _, c := range cases {
-		val := unmarshalFloat64(c.rep)
-		if val != c.val {
-			t.Errorf("unmarshalFloat64(% X) == %v, want %v", c.rep, val, c.val)
-		}
+		t.Run(fmt.Sprintf("unmarshal_%.3g", c.val), func(t *testing.T) {
+			val := unmarshalFloat64(c.rep)
+			if val != c.val {
+				t.Errorf("unmarshalFloat64(% X) == %v, want %v", c.rep, val, c.val)
+			}
+		})
 	}
 }

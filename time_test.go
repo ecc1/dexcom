@@ -17,14 +17,16 @@ func TestTime(t *testing.T) {
 		{0x0EDCBA98, parseTime("2016-11-25 22:58:32")},
 	}
 	for _, c := range cases {
-		tv := toTime(c.n)
-		if !tv.Equal(c.t) {
-			t.Errorf("toTime(%X) == %v, want %v", c.n, tv, c.t)
-		}
-		n := fromTime(c.t)
-		if n != c.n {
-			t.Errorf("fromTime(%v) == %X, want %X", c.t, n, c.n)
-		}
+		t.Run(c.t.String(), func(t *testing.T) {
+			tv := toTime(c.n)
+			if !tv.Equal(c.t) {
+				t.Errorf("toTime(%X) == %v, want %v", c.n, tv, c.t)
+			}
+			n := fromTime(c.t)
+			if n != c.n {
+				t.Errorf("fromTime(%v) == %X, want %X", c.t, n, c.n)
+			}
+		})
 	}
 }
 

@@ -21,9 +21,11 @@ func TestPacket(t *testing.T) {
 			[]byte{0x01, 0x0C, 0x00, 0x11, 0x05, 0x26, 0x00, 0x00, 0x00, 0x01, 0x5E, 0xC3}},
 	}
 	for _, c := range cases {
-		msg := marshalPacket(c.cmd, c.params)
-		if !bytes.Equal(msg, c.msg) {
-			t.Errorf("Command(%X, %X) == %X, want %X", c.cmd, c.params, msg, c.msg)
-		}
+		t.Run("", func(t *testing.T) {
+			msg := marshalPacket(c.cmd, c.params)
+			if !bytes.Equal(msg, c.msg) {
+				t.Errorf("Command(%X, %X) == %X, want %X", c.cmd, c.params, msg, c.msg)
+			}
+		})
 	}
 }
