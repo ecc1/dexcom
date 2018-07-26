@@ -1,0 +1,15 @@
+[
+  {
+    "Timestamp": {
+      "SystemTime": "2014-12-10T02:26:00-05:00",
+      "DisplayTime": "2014-12-09T18:25:59-05:00"
+    },
+    "Info": {
+      "DateTimeCreated": "2014-12-09 18:25:59.246 -08:00",
+      "HardwareId": "{0858EEF9-FF2F-4AE1-BA5F-E4FF90F6960B}",
+      "HardwarePartNumber": "MT20649",
+      "HardwareRevision": "23",
+      "SerialNumber": "SM44792675"
+    }
+  }
+]

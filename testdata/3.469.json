@@ -1,0 +1,254 @@
+[
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T22:08:16-04:00",
+      "DisplayTime": "2016-02-24T18:36:52-05:00"
+    },
+    "Info": {
+      "Unfiltered": 214944,
+      "Filtered": 221856,
+      "RSSI": -80,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T22:03:16-04:00",
+      "DisplayTime": "2016-02-24T18:31:52-05:00"
+    },
+    "Info": {
+      "Unfiltered": 219648,
+      "Filtered": 224576,
+      "RSSI": -84,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T21:58:16-04:00",
+      "DisplayTime": "2016-02-24T18:26:52-05:00"
+    },
+    "Info": {
+      "Unfiltered": 224128,
+      "Filtered": 225888,
+      "RSSI": -86,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T21:53:16-04:00",
+      "DisplayTime": "2016-02-24T18:21:52-05:00"
+    },
+    "Info": {
+      "Unfiltered": 225056,
+      "Filtered": 225216,
+      "RSSI": -81,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T21:48:16-04:00",
+      "DisplayTime": "2016-02-24T18:16:52-05:00"
+    },
+    "Info": {
+      "Unfiltered": 224288,
+      "Filtered": 222336,
+      "RSSI": -83,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T21:43:16-04:00",
+      "DisplayTime": "2016-02-24T18:11:52-05:00"
+    },
+    "Info": {
+      "Unfiltered": 225920,
+      "Filtered": 217184,
+      "RSSI": -89,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T21:38:16-04:00",
+      "DisplayTime": "2016-02-24T18:06:52-05:00"
+    },
+    "Info": {
+      "Unfiltered": 220096,
+      "Filtered": 209952,
+      "RSSI": -83,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T21:33:16-04:00",
+      "DisplayTime": "2016-02-24T18:01:52-05:00"
+    },
+    "Info": {
+      "Unfiltered": 213728,
+      "Filtered": 200544,
+      "RSSI": -91,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T21:28:16-04:00",
+      "DisplayTime": "2016-02-24T17:56:52-05:00"
+    },
+    "Info": {
+      "Unfiltered": 205120,
+      "Filtered": 188640,
+      "RSSI": -95,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T21:23:16-04:00",
+      "DisplayTime": "2016-02-24T17:51:52-05:00"
+    },
+    "Info": {
+      "Unfiltered": 195456,
+      "Filtered": 175648,
+      "RSSI": -92,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T21:18:16-04:00",
+      "DisplayTime": "2016-02-24T17:46:52-05:00"
+    },
+    "Info": {
+      "Unfiltered": 185024,
+      "Filtered": 164512,
+      "RSSI": -93,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T21:13:16-04:00",
+      "DisplayTime": "2016-02-24T17:41:52-05:00"
+    },
+    "Info": {
+      "Unfiltered": 172768,
+      "Filtered": 157248,
+      "RSSI": -88,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T21:08:16-04:00",
+      "DisplayTime": "2016-02-24T17:36:53-05:00"
+    },
+    "Info": {
+      "Unfiltered": 158048,
+      "Filtered": 153568,
+      "RSSI": -87,
+      "Unknown": 1
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T21:03:16-04:00",
+      "DisplayTime": "2016-02-24T17:31:52-05:00"
+    },
+    "Info": {
+      "Unfiltered": 154848,
+      "Filtered": 150368,
+      "RSSI": -92,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T20:58:16-04:00",
+      "DisplayTime": "2016-02-24T17:26:52-05:00"
+    },
+    "Info": {
+      "Unfiltered": 148992,
+      "Filtered": 144768,
+      "RSSI": -78,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T20:53:16-04:00",
+      "DisplayTime": "2016-02-24T17:21:53-05:00"
+    },
+    "Info": {
+      "Unfiltered": 148608,
+      "Filtered": 136448,
+      "RSSI": -77,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T20:48:16-04:00",
+      "DisplayTime": "2016-02-24T17:16:53-05:00"
+    },
+    "Info": {
+      "Unfiltered": 143808,
+      "Filtered": 126784,
+      "RSSI": -84,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T20:43:16-04:00",
+      "DisplayTime": "2016-02-24T17:11:53-05:00"
+    },
+    "Info": {
+      "Unfiltered": 132384,
+      "Filtered": 116896,
+      "RSSI": -82,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T20:38:16-04:00",
+      "DisplayTime": "2016-02-24T17:06:53-05:00"
+    },
+    "Info": {
+      "Unfiltered": 119712,
+      "Filtered": 107344,
+      "RSSI": -86,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T20:33:16-04:00",
+      "DisplayTime": "2016-02-24T17:01:53-05:00"
+    },
+    "Info": {
+      "Unfiltered": 115008,
+      "Filtered": 97984,
+      "RSSI": -85,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2015-07-17T20:28:16-04:00",
+      "DisplayTime": "2016-02-24T16:56:53-05:00"
+    },
+    "Info": {
+      "Unfiltered": 101328,
+      "Filtered": 89696,
+      "RSSI": -79,
+      "Unknown": 0
+    }
+  }
+]
