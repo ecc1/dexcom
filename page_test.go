@@ -50,7 +50,7 @@ func pageTest(t *testing.T, c testCase) {
 		t.Error(err)
 		return
 	}
-	page, err := unmarshalPage(data)
+	page, err := UnmarshalPage(data)
 	if err != nil {
 		t.Error(err)
 		return
@@ -61,9 +61,9 @@ func pageTest(t *testing.T, c testCase) {
 	if page.Number != c.pageNumber {
 		panic("page number mismatch")
 	}
-	decoded, err := unmarshalRecords(c.pageType, page.Records)
+	decoded, err := UnmarshalRecords(c.pageType, page.Records)
 	if err != nil {
-		t.Errorf("unmarshalRecords(%v, % X) returned %v", c.pageType, page.Records, err)
+		t.Errorf("UnmarshalRecords(%v, % X) returned %v", c.pageType, page.Records, err)
 		return
 	}
 	checkRecords(t, decoded, testFile+".json")

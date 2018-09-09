@@ -81,7 +81,8 @@ func (cgm *CGM) ReadPage(pageType PageType, pageNumber int) []byte {
 	return cgm.Cmd(ReadDatabasePages, buf.Bytes()...)
 }
 
-type pageInfo struct {
+// PageInfo represents a page of raw records.
+type PageInfo struct {
 	Type    PageType
 	Number  int
 	Records [][]byte
@@ -93,7 +94,7 @@ func (cgm *CGM) ReadRawRecords(pageType PageType, pageNumber int) [][]byte {
 	if cgm.Error() != nil {
 		return nil
 	}
-	page, err := unmarshalPage(v)
+	page, err := UnmarshalPage(v)
 	if err != nil {
 		if page == nil {
 			cgm.SetError(err)
@@ -115,7 +116,7 @@ func (cgm *CGM) ReadRecords(pageType PageType, pageNumber int) Records {
 	if cgm.Error() != nil {
 		return nil
 	}
-	records, err := unmarshalRecords(pageType, data)
+	records, err := UnmarshalRecords(pageType, data)
 	if err != nil {
 		cgm.SetError(fmt.Errorf("%v page %d: %v", pageType, pageNumber, err))
 	}
@@ -128,9 +129,9 @@ const (
 	oldCalRecordSize = 148
 )
 
-// unmarshalPage validates the CRC of the given page data and
+// UnmarshalPage validates the CRC of the given page data and
 // uses the page type to slice the data into raw records.
-func unmarshalPage(v []byte) (*pageInfo, error) {
+func UnmarshalPage(v []byte) (*PageInfo, error) {
 	if len(v) < headerSize {
 		return nil, fmt.Errorf("invalid page length (%d)", len(v))
 	}
@@ -154,7 +155,7 @@ func unmarshalPage(v []byte) (*pageInfo, error) {
 	// r1 := unmarshalInt32(h[14:18])
 	// r2 := unmarshalInt32(h[18:22])
 	// r3 := unmarshalInt32(h[22:26])
-	page := pageInfo{Type: pageType, Number: pageNumber}
+	page := PageInfo{Type: pageType, Number: pageNumber}
 	recordLen := recordLength[pageType]
 	if pageType == CalibrationData && rev <= oldCalRecordRev {
 		recordLen = oldCalRecordSize
@@ -187,7 +188,8 @@ func unmarshalPage(v []byte) (*pageInfo, error) {
 	return &page, nil
 }
 
-func unmarshalRecords(pageType PageType, data [][]byte) (Records, error) {
+// UnmarshalRecords unmarshals raw records into records of the appropriate type.
+func UnmarshalRecords(pageType PageType, data [][]byte) (Records, error) {
 	records := make(Records, 0, len(data))
 	var err error
 	for _, rec := range data {
