@@ -4,7 +4,7 @@
       "SystemTime": "2018-09-09T15:44:40-04:00",
       "DisplayTime": "2018-09-09T09:56:07-04:00"
     },
-    "Info": {
+    "Calibration": {
       "Slope": 762.989010989011,
       "Intercept": 34970.9010989011,
       "Scale": 1,
@@ -54,7 +54,7 @@
       "SystemTime": "2018-09-09T06:39:41-04:00",
       "DisplayTime": "2018-09-09T00:51:08-04:00"
     },
-    "Info": {
+    "Calibration": {
       "Slope": 762.989010989011,
       "Intercept": 34970.9010989011,
       "Scale": 1,

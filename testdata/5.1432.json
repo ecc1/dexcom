@@ -1,6 +1,6 @@
 [
   {
-    "Info": {
+    "Calibration": {
       "Data": [
         {
           "Glucose": 98,
@@ -62,7 +62,7 @@
     }
   },
   {
-    "Info": {
+    "Calibration": {
       "Data": [
         {
           "Glucose": 98,
