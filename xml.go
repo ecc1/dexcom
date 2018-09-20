@@ -16,7 +16,7 @@ func umarshalXMLInfo(r *Record, v []byte) {
 	if i != -1 {
 		v = v[:i]
 	}
-	r.Info = umarshalXMLBytes(v)
+	r.XML = umarshalXMLBytes(v)
 }
 
 func umarshalXMLBytes(v []byte) XMLInfo {

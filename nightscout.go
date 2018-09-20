@@ -25,29 +25,37 @@ func (r Record) nightscoutEntry() nightscout.Entry {
 		DateString: t.Format(nightscout.DateStringLayout),
 		Device:     nightscout.Device(),
 	}
-	switch info := r.Info.(type) {
-	case SensorInfo:
+	if r.Sensor != nil {
+		info := r.Sensor
 		e.Type = nightscout.SGVType
 		e.Unfiltered = int(info.Unfiltered)
 		e.Filtered = int(info.Filtered)
 		e.RSSI = int(info.RSSI)
-	case EGVInfo:
+		return e
+	}
+	if r.EGV != nil {
+		info := r.EGV
 		e.Type = nightscout.SGVType
 		e.SGV = int(info.Glucose)
 		e.Direction = nightscoutTrend(info.Trend)
 		e.Noise = int(info.Noise)
-	case MeterInfo:
+		return e
+	}
+	if r.Meter != nil {
+		info := r.Meter
 		e.Type = nightscout.MBGType
 		e.MBG = int(info.Glucose)
-	case CalibrationInfo:
+		return e
+	}
+	if r.Calibration != nil {
+		info := r.Calibration
 		e.Type = nightscout.CalType
 		e.Slope = info.Slope
 		e.Intercept = info.Intercept
 		e.Scale = info.Scale
-	default:
-		panic(fmt.Sprintf("nightscoutEntry %+v", r))
+		return e
 	}
-	return e
+	panic(fmt.Sprintf("nightscoutEntry %+v", r))
 }
 
 func nightscoutTrend(t Trend) string {

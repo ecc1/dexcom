@@ -9,8 +9,13 @@ import (
 type (
 	// Record represents a time-stamped Dexcom receiver record.
 	Record struct {
-		Timestamp Timestamp
-		Info      interface{}
+		Timestamp   Timestamp
+		XML         XMLInfo          `json:",omitempty"`
+		Sensor      *SensorInfo      `json:",omitempty"`
+		EGV         *EGVInfo         `json:",omitempty"`
+		Calibration *CalibrationInfo `json:",omitempty"`
+		Insertion   *InsertionInfo   `json:",omitempty"`
+		Meter       *MeterInfo       `json:",omitempty"`
 	}
 
 	// Records represents a sequence of records.
@@ -69,7 +74,7 @@ func (r Record) Time() time.Time {
 
 // Glucose returns the glucose field from an EGV record.
 func (r Record) Glucose() uint16 {
-	return r.Info.(EGVInfo).Glucose
+	return r.EGV.Glucose
 }
 
 // Len returns the number of records.
@@ -104,7 +109,7 @@ func (r *Record) unmarshal(pageType PageType, v []byte) error {
 }
 
 func unmarshalSensorInfo(r *Record, v []byte) {
-	r.Info = SensorInfo{
+	r.Sensor = &SensorInfo{
 		Unfiltered: unmarshalUint32(v[8:12]),
 		Filtered:   unmarshalUint32(v[12:16]),
 		RSSI:       int8(v[16]),
@@ -181,7 +186,7 @@ const (
 
 func umarshalEGVInfo(r *Record, v []byte) {
 	g := unmarshalUint16(v[8:10])
-	r.Info = EGVInfo{
+	r.EGV = &EGVInfo{
 		Glucose:     g & EGVValueMask,
 		DisplayOnly: g&EGVDisplayOnly != 0,
 		Noise:       v[10] & EGVNoiseMask >> 4,
@@ -190,7 +195,7 @@ func umarshalEGVInfo(r *Record, v []byte) {
 }
 
 func unmarshalCalibrationInfo(r *Record, v []byte) {
-	cal := CalibrationInfo{
+	cal := &CalibrationInfo{
 		Slope:     unmarshalFloat64(v[8:16]),
 		Intercept: unmarshalFloat64(v[16:24]),
 		Scale:     unmarshalFloat64(v[24:32]),
@@ -206,7 +211,7 @@ func unmarshalCalibrationInfo(r *Record, v []byte) {
 		cal.Data[i].TimeApplied = cal.Data[i].TimeApplied.Add(offset)
 		v = v[17:]
 	}
-	r.Info = cal
+	r.Calibration = cal
 }
 
 func (r *CalibrationRecord) unmarshal(v []byte) {
@@ -237,14 +242,14 @@ func unmarshalInsertionInfo(r *Record, v []byte) {
 	if !bytes.Equal(u, invalidTime) {
 		t = unmarshalTime(u)
 	}
-	r.Info = InsertionInfo{
+	r.Insertion = &InsertionInfo{
 		SystemTime: t,
 		Event:      SensorChange(v[12]),
 	}
 }
 
 func unmarshalMeterInfo(r *Record, v []byte) {
-	r.Info = MeterInfo{
+	r.Meter = &MeterInfo{
 		Glucose:   unmarshalUint16(v[8:10]),
 		MeterTime: unmarshalTime(v[10:14]),
 	}

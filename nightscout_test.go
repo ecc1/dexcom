@@ -44,7 +44,7 @@ func nsDate(s string) int64 {
 var (
 	r1 = Record{
 		Timestamp: ts("2017-09-17T01:13:51-04:00"),
-		Info: CalibrationInfo{
+		Calibration: &CalibrationInfo{
 			Slope:     939.6817717490421,
 			Intercept: 35926.604186515906,
 			Scale:     1,
@@ -52,13 +52,13 @@ var (
 	}
 	r2 = Record{
 		Timestamp: ts("2017-09-17T01:13:49-04:00"),
-		Info: MeterInfo{
+		Meter: &MeterInfo{
 			Glucose: 128,
 		},
 	}
 	r3 = Record{
 		Timestamp: ts("2017-09-17T11:13:17-04:00"),
-		Info: EGVInfo{
+		EGV: &EGVInfo{
 			Glucose: 84,
 			Trend:   Flat,
 			Noise:   1,
@@ -66,7 +66,7 @@ var (
 	}
 	r4 = Record{
 		Timestamp: ts("2017-09-17T11:13:16-04:00"),
-		Info: SensorInfo{
+		Sensor: &SensorInfo{
 			Unfiltered: 119088,
 			Filtered:   110288,
 			RSSI:       -62,
