@@ -6,16 +6,14 @@ import (
 	"testing"
 )
 
-const testDataDir = "testdata"
-
-type testCase struct {
+type pageTestCase struct {
 	pageType    PageType
 	pageNumber  int
 	alternative int
 }
 
 func TestPage(t *testing.T) {
-	cases := []testCase{
+	cases := []pageTestCase{
 		{ManufacturingData, 0, 0},
 		{SensorData, 469, 0},
 		{EGVData, 312, 0},
@@ -33,7 +31,7 @@ func TestPage(t *testing.T) {
 	}
 }
 
-func pageTest(t *testing.T, c testCase) {
+func pageTest(t *testing.T, c pageTestCase) {
 	testFile := testFileName(c)
 	f, err := os.Open(testFile + ".data")
 	if err != nil {
@@ -65,7 +63,7 @@ func pageTest(t *testing.T, c testCase) {
 	checkRecords(t, decoded, testFile+".json")
 }
 
-func testFileName(c testCase) string {
+func testFileName(c pageTestCase) string {
 	s := fmt.Sprintf("%s/%d.%d", testDataDir, c.pageType, c.pageNumber)
 	if c.alternative != 0 {
 		s += fmt.Sprintf("-%d", c.alternative)

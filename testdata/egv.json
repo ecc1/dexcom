@@ -1,0 +1,278 @@
+[
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:40:08-04:00",
+      "DisplayTime": "2018-09-19T18:38:22-04:00"
+    },
+    "EGV": {
+      "Glucose": 118,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:35:08-04:00",
+      "DisplayTime": "2018-09-19T18:33:22-04:00"
+    },
+    "EGV": {
+      "Glucose": 119,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:30:08-04:00",
+      "DisplayTime": "2018-09-19T18:28:22-04:00"
+    },
+    "EGV": {
+      "Glucose": 118,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:25:08-04:00",
+      "DisplayTime": "2018-09-19T18:23:22-04:00"
+    },
+    "EGV": {
+      "Glucose": 117,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:20:08-04:00",
+      "DisplayTime": "2018-09-19T18:18:22-04:00"
+    },
+    "EGV": {
+      "Glucose": 121,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:15:08-04:00",
+      "DisplayTime": "2018-09-19T18:13:22-04:00"
+    },
+    "EGV": {
+      "Glucose": 121,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:10:08-04:00",
+      "DisplayTime": "2018-09-19T17:07:53-04:00"
+    },
+    "EGV": {
+      "Glucose": 118,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:05:08-04:00",
+      "DisplayTime": "2018-09-19T17:02:53-04:00"
+    },
+    "EGV": {
+      "Glucose": 114,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:00:08-04:00",
+      "DisplayTime": "2018-09-19T17:59:04-04:00"
+    },
+    "EGV": {
+      "Glucose": 108,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:55:08-04:00",
+      "DisplayTime": "2018-09-19T17:54:04-04:00"
+    },
+    "EGV": {
+      "Glucose": 107,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:50:08-04:00",
+      "DisplayTime": "2018-09-19T17:49:04-04:00"
+    },
+    "EGV": {
+      "Glucose": 107,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:40:08-04:00",
+      "DisplayTime": "2018-09-19T17:39:04-04:00"
+    },
+    "EGV": {
+      "Glucose": 105,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:35:08-04:00",
+      "DisplayTime": "2018-09-19T17:34:04-04:00"
+    },
+    "EGV": {
+      "Glucose": 99,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:30:08-04:00",
+      "DisplayTime": "2018-09-19T17:29:04-04:00"
+    },
+    "EGV": {
+      "Glucose": 94,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:25:08-04:00",
+      "DisplayTime": "2018-09-19T17:24:04-04:00"
+    },
+    "EGV": {
+      "Glucose": 92,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:20:09-04:00",
+      "DisplayTime": "2018-09-19T17:19:04-04:00"
+    },
+    "EGV": {
+      "Glucose": 94,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:15:08-04:00",
+      "DisplayTime": "2018-09-19T17:14:04-04:00"
+    },
+    "EGV": {
+      "Glucose": 93,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:10:08-04:00",
+      "DisplayTime": "2018-09-19T17:09:04-04:00"
+    },
+    "EGV": {
+      "Glucose": 93,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:05:08-04:00",
+      "DisplayTime": "2018-09-19T17:04:04-04:00"
+    },
+    "EGV": {
+      "Glucose": 94,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:00:08-04:00",
+      "DisplayTime": "2018-09-19T16:59:04-04:00"
+    },
+    "EGV": {
+      "Glucose": 94,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-19T23:55:09-04:00",
+      "DisplayTime": "2018-09-19T16:54:04-04:00"
+    },
+    "EGV": {
+      "Glucose": 95,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-19T23:50:09-04:00",
+      "DisplayTime": "2018-09-19T16:49:04-04:00"
+    },
+    "EGV": {
+      "Glucose": 95,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-19T23:45:09-04:00",
+      "DisplayTime": "2018-09-19T16:44:04-04:00"
+    },
+    "EGV": {
+      "Glucose": 94,
+      "DisplayOnly": false,
+      "Noise": 1,
+      "Trend": 4
+    }
+  }
+]

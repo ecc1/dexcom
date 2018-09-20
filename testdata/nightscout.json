@@ -1,0 +1,350 @@
+[
+  {
+    "type": "sgv",
+    "date": 1537396701000,
+    "dateString": "2018-09-19T18:38:21-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 118,
+    "direction": "Flat",
+    "filtered": 150432,
+    "unfiltered": 150624,
+    "rssi": -63,
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537396401000,
+    "dateString": "2018-09-19T18:33:21-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 119,
+    "direction": "Flat",
+    "filtered": 151776,
+    "unfiltered": 151136,
+    "rssi": -81,
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537396101000,
+    "dateString": "2018-09-19T18:28:21-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 118,
+    "direction": "Flat",
+    "filtered": 153280,
+    "unfiltered": 150976,
+    "rssi": -85,
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537395801000,
+    "dateString": "2018-09-19T18:23:21-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 117,
+    "direction": "Flat",
+    "filtered": 153344,
+    "unfiltered": 149920,
+    "rssi": -87,
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537395501000,
+    "dateString": "2018-09-19T18:18:21-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 121,
+    "direction": "Flat",
+    "filtered": 150944,
+    "unfiltered": 153696,
+    "rssi": -75,
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537395201000,
+    "dateString": "2018-09-19T18:13:21-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 121,
+    "direction": "Flat",
+    "filtered": 146816,
+    "unfiltered": 153120,
+    "rssi": -58,
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537391272000,
+    "dateString": "2018-09-19T17:07:52-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 118,
+    "direction": "Flat",
+    "filtered": 143296,
+    "unfiltered": 150528,
+    "rssi": -65,
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537390973000,
+    "dateString": "2018-09-19T17:02:53-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 114,
+    "direction": "Flat",
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537394344000,
+    "dateString": "2018-09-19T17:59:04-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 108,
+    "direction": "Flat",
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537394044000,
+    "dateString": "2018-09-19T17:54:04-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 107,
+    "direction": "Flat",
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537393744000,
+    "dateString": "2018-09-19T17:49:04-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 107,
+    "direction": "Flat",
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537393144000,
+    "dateString": "2018-09-19T17:39:04-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 105,
+    "direction": "Flat",
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537392844000,
+    "dateString": "2018-09-19T17:34:04-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 99,
+    "direction": "Flat",
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537392544000,
+    "dateString": "2018-09-19T17:29:04-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 94,
+    "direction": "Flat",
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537392244000,
+    "dateString": "2018-09-19T17:24:04-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 92,
+    "direction": "Flat",
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537391944000,
+    "dateString": "2018-09-19T17:19:04-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 94,
+    "direction": "Flat",
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537391644000,
+    "dateString": "2018-09-19T17:14:04-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 93,
+    "direction": "Flat",
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537391344000,
+    "dateString": "2018-09-19T17:09:04-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 93,
+    "direction": "Flat",
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537391044000,
+    "dateString": "2018-09-19T17:04:04-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 94,
+    "direction": "Flat",
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537390972000,
+    "dateString": "2018-09-19T17:02:52-04:00",
+    "device": "openaps://stratocaster",
+    "filtered": 141824,
+    "unfiltered": 146752,
+    "rssi": -70
+  },
+  {
+    "type": "sgv",
+    "date": 1537394343000,
+    "dateString": "2018-09-19T17:59:03-04:00",
+    "device": "openaps://stratocaster",
+    "filtered": 141856,
+    "unfiltered": 141184,
+    "rssi": -62
+  },
+  {
+    "type": "sgv",
+    "date": 1537394043000,
+    "dateString": "2018-09-19T17:54:03-04:00",
+    "device": "openaps://stratocaster",
+    "filtered": 141216,
+    "unfiltered": 140192,
+    "rssi": -79
+  },
+  {
+    "type": "sgv",
+    "date": 1537393743000,
+    "dateString": "2018-09-19T17:49:03-04:00",
+    "device": "openaps://stratocaster",
+    "filtered": 138368,
+    "unfiltered": 140256,
+    "rssi": -76
+  },
+  {
+    "type": "sgv",
+    "date": 1537393143000,
+    "dateString": "2018-09-19T17:39:03-04:00",
+    "device": "openaps://stratocaster",
+    "filtered": 129808,
+    "unfiltered": 137728,
+    "rssi": -73
+  },
+  {
+    "type": "sgv",
+    "date": 1537392843000,
+    "dateString": "2018-09-19T17:34:03-04:00",
+    "device": "openaps://stratocaster",
+    "filtered": 127520,
+    "unfiltered": 132800,
+    "rssi": -79
+  },
+  {
+    "type": "sgv",
+    "date": 1537392543000,
+    "dateString": "2018-09-19T17:29:03-04:00",
+    "device": "openaps://stratocaster",
+    "filtered": 126768,
+    "unfiltered": 127936,
+    "rssi": -82
+  },
+  {
+    "type": "sgv",
+    "date": 1537392243000,
+    "dateString": "2018-09-19T17:24:03-04:00",
+    "device": "openaps://stratocaster",
+    "filtered": 126752,
+    "unfiltered": 125424,
+    "rssi": -91
+  },
+  {
+    "type": "sgv",
+    "date": 1537391943000,
+    "dateString": "2018-09-19T17:19:03-04:00",
+    "device": "openaps://stratocaster",
+    "filtered": 126912,
+    "unfiltered": 127760,
+    "rssi": -82
+  },
+  {
+    "type": "sgv",
+    "date": 1537391643000,
+    "dateString": "2018-09-19T17:14:03-04:00",
+    "device": "openaps://stratocaster",
+    "filtered": 127216,
+    "unfiltered": 126928,
+    "rssi": -83
+  },
+  {
+    "type": "sgv",
+    "date": 1537391343000,
+    "dateString": "2018-09-19T17:09:03-04:00",
+    "device": "openaps://stratocaster",
+    "filtered": 127680,
+    "unfiltered": 126544,
+    "rssi": -84
+  },
+  {
+    "type": "sgv",
+    "date": 1537391043000,
+    "dateString": "2018-09-19T17:04:03-04:00",
+    "device": "openaps://stratocaster",
+    "filtered": 127968,
+    "unfiltered": 127552,
+    "rssi": -85
+  },
+  {
+    "type": "sgv",
+    "date": 1537390743000,
+    "dateString": "2018-09-19T16:59:03-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 94,
+    "direction": "Flat",
+    "filtered": 128048,
+    "unfiltered": 127664,
+    "rssi": -92,
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537390443000,
+    "dateString": "2018-09-19T16:54:03-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 95,
+    "direction": "Flat",
+    "filtered": 128272,
+    "unfiltered": 128272,
+    "rssi": -90,
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537390143000,
+    "dateString": "2018-09-19T16:49:03-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 95,
+    "direction": "Flat",
+    "filtered": 128816,
+    "unfiltered": 128800,
+    "rssi": -86,
+    "noise": 1
+  },
+  {
+    "type": "sgv",
+    "date": 1537389843000,
+    "dateString": "2018-09-19T16:44:03-04:00",
+    "device": "openaps://stratocaster",
+    "sgv": 94,
+    "direction": "Flat",
+    "filtered": 129504,
+    "unfiltered": 127936,
+    "rssi": -83,
+    "noise": 1
+  }
+]

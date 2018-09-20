@@ -1,0 +1,278 @@
+[
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:40:08-04:00",
+      "DisplayTime": "2018-09-19T18:38:21-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 150624,
+      "Filtered": 150432,
+      "RSSI": -63,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:35:08-04:00",
+      "DisplayTime": "2018-09-19T18:33:21-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 151136,
+      "Filtered": 151776,
+      "RSSI": -81,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:30:08-04:00",
+      "DisplayTime": "2018-09-19T18:28:21-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 150976,
+      "Filtered": 153280,
+      "RSSI": -85,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:25:08-04:00",
+      "DisplayTime": "2018-09-19T18:23:21-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 149920,
+      "Filtered": 153344,
+      "RSSI": -87,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:20:08-04:00",
+      "DisplayTime": "2018-09-19T18:18:21-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 153696,
+      "Filtered": 150944,
+      "RSSI": -75,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:15:08-04:00",
+      "DisplayTime": "2018-09-19T18:13:21-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 153120,
+      "Filtered": 146816,
+      "RSSI": -58,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:10:08-04:00",
+      "DisplayTime": "2018-09-19T17:07:52-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 150528,
+      "Filtered": 143296,
+      "RSSI": -65,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:05:08-04:00",
+      "DisplayTime": "2018-09-19T17:02:52-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 146752,
+      "Filtered": 141824,
+      "RSSI": -70,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T01:00:08-04:00",
+      "DisplayTime": "2018-09-19T17:59:03-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 141184,
+      "Filtered": 141856,
+      "RSSI": -62,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:55:08-04:00",
+      "DisplayTime": "2018-09-19T17:54:03-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 140192,
+      "Filtered": 141216,
+      "RSSI": -79,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:50:08-04:00",
+      "DisplayTime": "2018-09-19T17:49:03-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 140256,
+      "Filtered": 138368,
+      "RSSI": -76,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:40:08-04:00",
+      "DisplayTime": "2018-09-19T17:39:03-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 137728,
+      "Filtered": 129808,
+      "RSSI": -73,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:35:08-04:00",
+      "DisplayTime": "2018-09-19T17:34:03-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 132800,
+      "Filtered": 127520,
+      "RSSI": -79,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:30:08-04:00",
+      "DisplayTime": "2018-09-19T17:29:03-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 127936,
+      "Filtered": 126768,
+      "RSSI": -82,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:25:08-04:00",
+      "DisplayTime": "2018-09-19T17:24:03-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 125424,
+      "Filtered": 126752,
+      "RSSI": -91,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:20:08-04:00",
+      "DisplayTime": "2018-09-19T17:19:03-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 127760,
+      "Filtered": 126912,
+      "RSSI": -82,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:15:08-04:00",
+      "DisplayTime": "2018-09-19T17:14:03-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 126928,
+      "Filtered": 127216,
+      "RSSI": -83,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:10:08-04:00",
+      "DisplayTime": "2018-09-19T17:09:03-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 126544,
+      "Filtered": 127680,
+      "RSSI": -84,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:05:08-04:00",
+      "DisplayTime": "2018-09-19T17:04:03-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 127552,
+      "Filtered": 127968,
+      "RSSI": -85,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-20T00:00:08-04:00",
+      "DisplayTime": "2018-09-19T16:59:03-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 127664,
+      "Filtered": 128048,
+      "RSSI": -92,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-19T23:55:08-04:00",
+      "DisplayTime": "2018-09-19T16:54:03-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 128272,
+      "Filtered": 128272,
+      "RSSI": -90,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-19T23:50:08-04:00",
+      "DisplayTime": "2018-09-19T16:49:03-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 128800,
+      "Filtered": 128816,
+      "RSSI": -86,
+      "Unknown": 0
+    }
+  },
+  {
+    "Timestamp": {
+      "SystemTime": "2018-09-19T23:45:08-04:00",
+      "DisplayTime": "2018-09-19T16:44:03-04:00"
+    },
+    "Sensor": {
+      "Unfiltered": 127936,
+      "Filtered": 129504,
+      "RSSI": -83,
+      "Unknown": 0
+    }
+  }
+]

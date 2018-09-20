@@ -2,6 +2,8 @@ package dexcom
 
 import (
 	"encoding/json"
+	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -181,4 +183,47 @@ func equalEntries(x, y Entries) bool {
 		}
 	}
 	return true
+}
+
+type mergeTestCase struct {
+	sensorFile string
+	egvFile    string
+	nsFile     string
+}
+
+func TestMergeGlucoseEntries(t *testing.T) {
+	cases := []mergeTestCase{
+		{"sensor", "egv", "nightscout"},
+	}
+	for _, c := range cases {
+		t.Run(c.nsFile, func(t *testing.T) {
+			mergeTest(t, c)
+		})
+	}
+}
+
+func mergeTest(t *testing.T, c mergeTestCase) {
+	s := decodeRecords(fmt.Sprintf("%s/%s.json", testDataDir, c.sensorFile))
+	e := decodeRecords(fmt.Sprintf("%s/%s.json", testDataDir, c.egvFile))
+	m := MergeHistory(s, e)
+	ns := NightscoutEntries(m)
+	eq, msg := compareDataToJSON(ns, fmt.Sprintf("%s/%s.json", testDataDir, c.nsFile))
+	if !eq {
+		t.Errorf("JSON is different:\n%s\n", msg)
+	}
+}
+
+func decodeRecords(file string) Records {
+	f, err := os.Open(file)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	d := json.NewDecoder(f)
+	var records Records
+	err = d.Decode(&records)
+	if err != nil {
+		panic(err)
+	}
+	return records
 }

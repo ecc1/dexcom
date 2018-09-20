@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+const (
+	testDataDir = "testdata"
+)
+
 // Force timezone to match test data.
 func init() {
 	os.Setenv("TZ", "America/New_York")
