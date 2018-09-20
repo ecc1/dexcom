@@ -93,10 +93,7 @@ func mergeGlucoseEntries(entries nightscout.Entries) nightscout.Entries {
 			f := entries[i+1]
 			if f.Type == nightscout.SGVType {
 				delta := e.Time().Sub(f.Time())
-				if delta < 0 {
-					log.Panicf("out-of-order glucose entries (delta = %v)", delta)
-				}
-				if delta < glucoseReadingWindow {
+				if 0 <= delta && delta < glucoseReadingWindow {
 					e = combineEntries(e, f)
 					i++
 				}
