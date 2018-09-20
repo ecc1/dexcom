@@ -1,15 +1,9 @@
 package dexcom
 
 import (
-	"os"
 	"testing"
 	"time"
 )
-
-// Force timezone to match test data.
-func init() {
-	os.Setenv("TZ", "America/New_York")
-}
 
 func TestTime(t *testing.T) {
 	cases := []struct {
@@ -34,12 +28,4 @@ func TestTime(t *testing.T) {
 			}
 		})
 	}
-}
-
-func parseTime(s string) time.Time {
-	t, err := time.ParseInLocation(UserTimeLayout, s, time.Local)
-	if err != nil {
-		panic(err)
-	}
-	return t
 }
