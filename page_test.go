@@ -74,7 +74,7 @@ func testFileName(c testCase) string {
 }
 
 func checkRecords(t *testing.T, decoded Records, jsonFile string) {
-	eq, msg := compareJSON(decoded, jsonFile)
+	eq, msg := compareDataToJSON(decoded, jsonFile)
 	if !eq {
 		t.Errorf("JSON is different:\n%s\n", msg)
 	}
