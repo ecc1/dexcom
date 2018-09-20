@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -10,8 +11,13 @@ import (
 	"github.com/ecc1/dexcom"
 )
 
+var (
+	nsFlag = flag.Bool("n", false, "print records in Nightscout format")
+)
+
 func main() {
-	for _, file := range os.Args[1:] {
+	flag.Parse()
+	for _, file := range flag.Args() {
 		f, err := os.Open(file)
 		if err != nil {
 			log.Fatal(err)
@@ -40,7 +46,12 @@ func readRecords(data []byte) {
 func printResults(results dexcom.Records) {
 	e := json.NewEncoder(os.Stdout)
 	e.SetIndent("", "  ")
-	err := e.Encode(results)
+	var err error
+	if *nsFlag {
+		err = e.Encode(dexcom.NightscoutEntries(results))
+	} else {
+		err = e.Encode(results)
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
