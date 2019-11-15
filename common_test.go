@@ -11,11 +11,13 @@ import (
 )
 
 const (
-	testDataDir = "testdata"
+	testDataDir          = "testdata"
+	testNightscoutDevice = "openaps://stratocaster"
 )
 
-// Force timezone to match test data.
+// Force Nightscout device and timezone to match test data.
 func init() {
+	os.Setenv("NIGHTSCOUT_DEVICE", testNightscoutDevice)
 	os.Setenv("TZ", "America/New_York")
 }
 

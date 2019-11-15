@@ -75,7 +75,7 @@ var (
 		},
 	}
 
-	dev = nightscout.Device()
+	dev = testNightscoutDevice
 
 	e1 = Entry{
 		Type:       "cal",
