@@ -41,18 +41,30 @@ func (r Record) nightscoutEntry() nightscout.Entry {
 		e.Noise = int(info.Noise)
 		return e
 	}
-	if r.Meter != nil {
-		info := r.Meter
-		e.Type = nightscout.MBGType
-		e.MBG = int(info.Glucose)
-		return e
-	}
 	if r.Calibration != nil {
 		info := r.Calibration
 		e.Type = nightscout.CalType
 		e.Slope = info.Slope
 		e.Intercept = info.Intercept
 		e.Scale = info.Scale
+		return e
+	}
+	if r.Insertion != nil {
+		info := r.Insertion
+		switch info.Event {
+		case Stopped:
+			e.Type = "Sensor Change"
+		case Started:
+			e.Type = "Sensor Start"
+		default:
+			e.Type = fmt.Sprintf("%d", info.Event)
+		}
+		return e
+	}
+	if r.Meter != nil {
+		info := r.Meter
+		e.Type = nightscout.MBGType
+		e.MBG = int(info.Glucose)
 		return e
 	}
 	panic(fmt.Sprintf("nightscoutEntry %+v", r))

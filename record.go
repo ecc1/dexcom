@@ -37,18 +37,6 @@ type (
 		Trend       Trend
 	}
 
-	// InsertionInfo represents a sensor change event.
-	InsertionInfo struct {
-		SystemTime time.Time
-		Event      SensorChange
-	}
-
-	// MeterInfo represents a meter reading.
-	MeterInfo struct {
-		Glucose   uint16
-		MeterTime time.Time
-	}
-
 	// CalibrationInfo represents a calibration event.
 	CalibrationInfo struct {
 		Slope     float64
@@ -64,6 +52,18 @@ type (
 		Glucose     int32
 		Raw         int32
 		TimeApplied time.Time
+	}
+
+	// InsertionInfo represents a sensor change event.
+	InsertionInfo struct {
+		SystemTime time.Time
+		Event      SensorChange
+	}
+
+	// MeterInfo represents a meter reading.
+	MeterInfo struct {
+		Glucose   uint16
+		MeterTime time.Time
 	}
 )
 
