@@ -12,7 +12,6 @@ import (
 )
 
 const (
-	csvFormat  = "csv"
 	jsonFormat = "json"
 	nsFormat   = "ns"
 	textFormat = "text"
@@ -22,11 +21,12 @@ var (
 	all      = flag.Bool("a", false, "get all records")
 	duration = flag.Duration("d", time.Hour, "get `duration` worth of previous records")
 	since    = flag.String("t", "", "get records since the specified `time` in RFC3339 format")
-	format   = flag.String("f", textFormat, "format in which to print records (csv, json, ns, or text)")
+	format   = flag.String("f", textFormat, "format in which to print records (json, ns, or text)")
 
 	egv         = flag.Bool("e", true, "include EGV records")
 	sensor      = flag.Bool("s", false, "include sensor records")
 	calibration = flag.Bool("c", false, "include calibration records")
+	insertion   = flag.Bool("i", false, "include insertion records")
 	meter       = flag.Bool("m", false, "include meter records")
 
 	recordTypes = []struct {
@@ -36,6 +36,7 @@ var (
 		{egv, dexcom.EGVData},
 		{sensor, dexcom.SensorData},
 		{calibration, dexcom.CalibrationData},
+		{insertion, dexcom.InsertionTimeData},
 		{meter, dexcom.MeterData},
 	}
 )
@@ -43,7 +44,7 @@ var (
 func main() {
 	flag.Parse()
 	switch *format {
-	case csvFormat, jsonFormat, nsFormat, textFormat:
+	case jsonFormat, nsFormat, textFormat:
 	default:
 		flag.Usage()
 		return
@@ -84,9 +85,6 @@ func main() {
 		printJSON(results)
 		return
 	}
-	if *format == csvFormat {
-		fmt.Printf("Time,Type,Glucose,Sensor,Slope,Intercept,Scale,Decay\n")
-	}
 	for _, r := range results {
 		printRecord(r)
 	}
@@ -120,60 +118,48 @@ func printJSON(v interface{}) {
 
 func printRecord(r dexcom.Record) {
 	t := r.Time().Format(dexcom.UserTimeLayout)
-	switch info := r.Info.(type) {
-	case dexcom.SensorInfo:
-		printSensor(t, info)
-	case dexcom.EGVInfo:
-		printEGV(t, info)
-	case dexcom.CalibrationInfo:
-		printCalibration(t, info)
-	case dexcom.MeterInfo:
-		printMeter(t, info)
-	default:
-		panic(fmt.Sprintf("unexpected record %+v", r))
+	printSensor(t, r.Sensor)
+	printEGV(t, r.EGV)
+	printCalibration(t, r.Calibration)
+	printInsertion(t, r.Insertion)
+	printMeter(t, r.Meter)
+}
+
+func printSensor(t string, s *dexcom.SensorInfo) {
+	if s == nil {
+		return
+	}
+	fmt.Printf("%s            %6d  %6d  %3d\n", t, s.Unfiltered, s.Filtered, s.RSSI)
+}
+
+func printEGV(t string, e *dexcom.EGVInfo) {
+	if e == nil {
+		return
+	}
+	fmt.Printf("%s  %3d  %3d\n", t, e.Glucose, e.Noise)
+}
+
+func printCalibration(t string, cal *dexcom.CalibrationInfo) {
+	if cal == nil {
+		return
+	}
+	fmt.Printf("%s  %-5s  %g  %g  %g  %g\n", t, "CAL", cal.Slope, cal.Intercept, cal.Scale, cal.Decay)
+	for _, d := range cal.Data {
+		t = d.TimeEntered.Format(dexcom.UserTimeLayout)
+		fmt.Printf("%s  %-5s  %3d  %6d\n", t, "DATA", d.Glucose, d.Raw)
 	}
 }
 
-func printSensor(t string, s dexcom.SensorInfo) {
-	switch *format {
-	case csvFormat:
-		fmt.Printf("%s,G,,%d\n", t, s.Unfiltered)
-	case textFormat:
-		fmt.Printf("%s            %6d  %6d  %3d\n", t, s.Unfiltered, s.Filtered, s.RSSI)
+func printInsertion(t string, i *dexcom.InsertionInfo) {
+	if i == nil {
+		return
 	}
+	fmt.Printf("%s  %-5s  %s\n", t, "SITE", i.Event)
 }
 
-func printEGV(t string, e dexcom.EGVInfo) {
-	switch *format {
-	case csvFormat:
-		fmt.Printf("%s,G,%d,\n", t, e.Glucose)
-	case textFormat:
-		fmt.Printf("%s  %3d  %3d\n", t, e.Glucose, e.Noise)
+func printMeter(t string, m *dexcom.MeterInfo) {
+	if m == nil {
+		return
 	}
-}
-
-func printCalibration(t string, cal dexcom.CalibrationInfo) {
-	switch *format {
-	case csvFormat:
-		fmt.Printf("%s,%s,,,%g,%g,%g,%g\n", t, "C", cal.Slope, cal.Intercept, cal.Scale, cal.Decay)
-		for _, d := range cal.Data {
-			t = d.TimeEntered.Format(dexcom.UserTimeLayout)
-			fmt.Printf("%s,%s,%d,%d\n", t, "D", d.Glucose, d.Raw)
-		}
-	case textFormat:
-		fmt.Printf("%s  %-5s  %g  %g  %g  %g\n", t, "CAL", cal.Slope, cal.Intercept, cal.Scale, cal.Decay)
-		for _, d := range cal.Data {
-			t = d.TimeEntered.Format(dexcom.UserTimeLayout)
-			fmt.Printf("%s  %-5s  %3d  %6d\n", t, "DATA", d.Glucose, d.Raw)
-		}
-	}
-}
-
-func printMeter(t string, m dexcom.MeterInfo) {
-	switch *format {
-	case csvFormat:
-		fmt.Printf("%s,%s,%d\n", t, "M", m.Glucose)
-	case textFormat:
-		fmt.Printf("%s  %-5s  %3d\n", t, "METER", m.Glucose)
-	}
+	fmt.Printf("%s  %-5s  %3d\n", t, "METER", m.Glucose)
 }
