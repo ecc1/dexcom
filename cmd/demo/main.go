@@ -28,7 +28,6 @@ func printXMLInfo(name string, xml dexcom.XMLInfo) {
 
 func printXMLRecord(cgm *dexcom.CGM, pageType dexcom.PageType, description string) {
 	r := cgm.ReadXMLRecord(pageType)
-	xml := r.Info.(dexcom.XMLInfo)
-	printXMLInfo(description, xml)
+	printXMLInfo(description, r.XML)
 	fmt.Printf("    %+v\n", r.Timestamp)
 }
