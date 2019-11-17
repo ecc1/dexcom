@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/ecc1/ble"
@@ -17,11 +18,16 @@ type bleConn struct {
 }
 
 const (
-	authEnvVar   = "DEXCOM_CGM_ID"
-	receiverName = "DEXCOMRX"
+	addressEnvVar = "DEXCOM_G4_RECEIVER_ADDRESS"
+	authEnvVar    = "DEXCOM_CGM_ID"
+
+	discoveryTimeout = 10 * time.Second
+	receiveTimeout   = 5 * time.Second
 )
 
 var (
+	receiverAddress ble.Address
+
 	receiverService = dexcomUUID(0xa0b1)
 	authentication  = dexcomUUID(0xacac)
 	heartbeat       = dexcomUUID(0x2b18)
@@ -53,7 +59,6 @@ func (conn *bleConn) Send(data []byte) error {
 
 // Receive reads data from the BLE connection.
 func (conn *bleConn) Receive(data []byte) error {
-	const receiveTimeout = 5 * time.Second
 	for i := 0; i < len(data); i++ {
 		select {
 		case b := <-conn.rx:
@@ -62,6 +67,21 @@ func (conn *bleConn) Receive(data []byte) error {
 			return fmt.Errorf("BLE receive timeout")
 		}
 	}
+	return nil
+}
+
+func initAddress() error {
+	if len(receiverAddress) != 0 {
+		return nil
+	}
+	addr := os.Getenv(addressEnvVar)
+	if len(addr) == 0 {
+		return fmt.Errorf("%s environment variable is not set", addressEnvVar)
+	}
+	if !ble.ValidAddress(addr) {
+		return fmt.Errorf("%s: %q is not a valid MAC address", addressEnvVar, addr)
+	}
+	receiverAddress = ble.Address(strings.ToUpper(addr))
 	return nil
 }
 
@@ -93,22 +113,26 @@ func connect(conn *ble.Connection) error {
 }
 
 func findDevice(conn *ble.Connection) (ble.Device, error) {
-	device, err := conn.GetDevice(receiverService)
+	err := initAddress()
+	if err != nil {
+		return nil, err
+	}
+	device, err := conn.GetDeviceByAddress(receiverAddress)
 	if err == nil && device.Connected() {
 		return device, nil
 	}
 	// Remove device to avoid "Software caused connection abort" error.
-	device, err = conn.GetDeviceByName(receiverName)
 	if err == nil {
 		adapter, err := conn.GetAdapter()
 		if err != nil {
 			return nil, err
 		}
-		if err = adapter.RemoveDevice(device); err != nil {
+		err = adapter.RemoveDevice(device)
+		if err != nil {
 			return nil, err
 		}
 	}
-	return conn.Discover(10*time.Second, receiverService)
+	return conn.Discover(discoveryTimeout, receiverAddress, receiverService)
 }
 
 func initAuthCode() error {
@@ -147,11 +171,11 @@ func authenticate(device ble.Device, reauth bool) error {
 			return nil
 		}
 	}
+	log.Printf("%s: authenticating", device.Name())
 	err = auth.WriteValue(authCode)
 	if err != nil {
 		return err
 	}
-	log.Printf("%s: authenticated", device.Name())
 	return nil
 }
 
