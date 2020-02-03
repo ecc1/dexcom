@@ -34,6 +34,7 @@ var (
 	jsonFile           = flag.String("f", "", "append results to JSON `file`")
 	jsonCutoff         = flag.Duration("k", 7*24*time.Hour, "maximum age of CGM entries to keep in JSON file")
 
+	ns         *nightscout.Website
 	cgm        *dexcom.CGM
 	cgmTime    time.Time
 	cgmEpoch   time.Time
@@ -50,8 +51,13 @@ func main() {
 	if *simulateUploadFlag {
 		*uploadFlag = true
 	}
-	nightscout.SetNoUpload(*simulateUploadFlag)
-	nightscout.SetVerbose(*verboseFlag)
+	var err error
+	ns, err = nightscout.DefaultSite()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ns.SetNoUpload(*simulateUploadFlag)
+	ns.SetVerbose(*verboseFlag)
 	papertrail.StartLogging()
 	if *jsonFile != "" {
 		oldEntries = readJSON()
@@ -139,7 +145,7 @@ func validateGlucose(readings dexcom.Records) dexcom.Records {
 }
 
 func uploadEntries() {
-	gaps, err := nightscout.Gaps(cgmEpoch, gapDuration)
+	gaps, err := ns.Gaps(cgmEpoch, gapDuration)
 	if err != nil {
 		log.Print(err)
 		somethingFailed = true
@@ -155,7 +161,7 @@ func uploadEntries() {
 	missing := nightscout.Missing(newEntries, gaps)
 	log.Printf("uploading %d entries to Nightscout", len(missing))
 	for _, e := range missing {
-		err := nightscout.Upload("POST", "entries", e)
+		err := ns.Upload("api/v1/entries", e)
 		if err != nil {
 			log.Print(err)
 			somethingFailed = true

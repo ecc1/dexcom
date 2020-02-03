@@ -27,12 +27,19 @@ var (
 		dexcom.MeterData,
 		dexcom.CalibrationData,
 	}
+
+	ns *nightscout.Website
 )
 
 func main() {
 	flag.Parse()
-	nightscout.SetNoUpload(*noUploadFlag)
-	nightscout.SetVerbose(*verboseFlag)
+	var err error
+	ns, err = nightscout.DefaultSite()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ns.SetNoUpload(*noUploadFlag)
+	ns.SetVerbose(*verboseFlag)
 	gaps, cutoff := findGaps()
 	if len(gaps) == 0 {
 		return
@@ -43,7 +50,7 @@ func main() {
 func findGaps() ([]nightscout.Gap, time.Time) {
 	now := time.Now()
 	cutoff := now.Add(-*checkDuration)
-	gaps, err := nightscout.Gaps(cutoff, gapDuration)
+	gaps, err := ns.Gaps(cutoff, gapDuration)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -85,7 +92,7 @@ func getRecords(cutoff time.Time) nightscout.Entries {
 func upload(entries nightscout.Entries) {
 	log.Printf("uploading %d entries to Nightscout", len(entries))
 	for _, e := range entries {
-		err := nightscout.Upload("POST", "entries", e)
+		err := ns.Upload("api/v1/entries", e)
 		if err != nil {
 			log.Fatal(err)
 		}
